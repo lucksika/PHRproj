@@ -1,0 +1,477 @@
+/**
+ * Alerts Controller
+ แยก logic เรื่องวันที่เป็น super controller 
+ สีอยู่ใน config
+ */
+
+angular
+ .module('RDash')
+ .controller('GetImageCtrl', ['$scope', 'ResourceFactory', GetImageCtrl])
+ .controller('LabresultCtrl', ['$scope', 'ResourceFactory', 'currentUser', LabresultCtrl])
+ .controller('LabResultDetailCtrl', ['$scope', '$state', '$stateParams', 'ResourceFactory', 'currentUser', LabResultDetailCtrl])
+ .controller('LineBunCtrl', ['$scope', LineBunCtrl])
+ .controller('BarWeightCtrl', ['$scope', BarWeightCtrl])
+ .controller('BarNutrientProgressCtrl', ['$scope', BarNutrientProgressCtrl])
+ .controller('PieNutrientCtrl', ['$scope', 'ResourceFactory', 'FormatDateFactory', 'NutrientPieChartService', 'currentUser', PieNutrientCtrl])
+ .controller('PieNutrientWidgetCtrl', ['$scope', 'ResourceFactory', 'FormatDateFactory', 'NutrientPieChartService', 'currentUser', PieNutrientWidgetCtrl])
+ .controller('PieNutrientProgressWidgetCtrl', ['$scope', 'ResourceFactory', 'FormatDateFactory', 'NutrientPieChartService', 'currentUser', PieNutrientProgressWidgetCtrl])
+ .controller('LineNutrientCtrl', ['$scope', 'ResourceFactory', 'FormatDateFactory', 'currentUser', LineNutrientCtrl])
+ .controller('PieMineralCtrl', ['$scope', PieMineralCtrl])
+ .controller('KnobWaterChartCtrl', ['$scope', KnobWaterChartCtrl])
+ .controller('KnobRiceChartCtrl', ['$scope', KnobRiceChartCtrl]);
+
+function GetImageCtrl($scope, ResourceFactory){
+    var imageResource = ResourceFactory.labresultImage()
+    /*
+    //  - get one nutrient a time
+    //  - last 7 year only
+    //  
+    //  parameter -> nutrient title
+    //  graph show -> value & limit
+    //  * change date format to 'Aug 2, 16'
+    */
+    $scope.getImg = function () {
+        var image = imageResource.get( function (){
+            console.log(image)
+            $scope.myImage = image.string
+        });
+    }
+
+}
+
+function KnobRiceChartCtrl($scope){
+    $scope.value = 20;
+    $scope.options = {
+        unit: "%",
+        size: 150,
+        readOnly: true,
+        subText: {
+            enabled: true,
+            text: 'Rice',
+            color: '#000',
+            font: 'auto'
+        },
+        trackWidth: 20,
+        barWidth: 15,
+        trackColor: '#656D7F',
+        barColor: '#FFCC66'
+        //other options
+    };
+}
+
+function KnobWaterChartCtrl($scope){
+    $scope.lastcheck = new Date()
+    $scope.value = 65;
+    $scope.options = {
+        unit: "%",
+        size: 200,
+        readOnly: true,
+        subText: {
+            enabled: true,
+            text: '614 / 945 lb',
+            color: '#000',
+            font: 'auto'
+        },
+        trackWidth: 20,
+        barWidth: 15,
+        trackColor: '#656D7F',
+        barColor: '#2cc185'
+        //other options
+    };
+}
+
+function LabresultCtrl($scope, ResourceFactory, currentUser){
+    var today = new Date()
+    var userid = currentUser.userid
+    var appid = currentUser.appid
+    var year = today.getFullYear().toString()
+    var month = '0' + (today.getMonth() + 1).toString()
+    var amount = 3
+    $scope.options = {
+            elements:{
+                line: {
+                    fill: false,
+                    borderWidth: 5,
+
+                },
+                point:{
+                    radius: 5,
+                    // pointBackgroundColor: '#F44336'
+                }
+            },
+            
+
+        }
+    // var a = ['#F44336', '#F44336', '#F44336', '#F44336', '#F44336', '#F44336', '#F44336', '#F44336', '#F44336', '#F44336', '#F44336', '#F44336']
+    // var b = ['#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0']
+    
+    // $scope.override = [{
+    //     pointBackgroundColor: a,
+    // },{
+    //     pointBackgroundColor: b,
+    // }]
+    
+    $scope.colours = ['#4FC3F7', '#FFC400']
+    
+    $scope.series = ['Limit (mg/dL)', 'Lucksika (mg/dL)']
+    var initialLabresultData = function(){
+        var LabresultResource = ResourceFactory.labresultChartPoint()
+        var info = LabresultResource.get({userid: userid, appid: appid, year: year, month: month, amount: amount}, function(){
+            $scope.results = info.data
+        })
+        
+    }
+
+
+    initialLabresultData()
+
+}
+
+function LabResultDetailCtrl($scope, $state, $stateParams, ResourceFactory, currentUser){
+    console.log("$stateParams.ref: ", $stateParams.ref)
+    var today = new Date()
+    var userid = currentUser.userid
+    var appid = currentUser.appid
+    var year = today.getFullYear().toString()
+    var month = '0' + (today.getMonth() + 1).toString()
+    var amount = 12
+
+    $scope.title = $stateParams.ref
+    $scope.options = {
+            elements:{
+                line: {
+                    fill: false,
+                    borderWidth: 5,
+
+                },
+                point:{
+                    radius: 5,
+                    // pointBackgroundColor: '#F44336'
+                }
+            },
+            
+        }
+    $scope.colours = ['#4FC3F7', '#FFC400']
+    
+    $scope.series = ['Limit (mg/dL)', 'Lucksika (mg/dL)']        
+    var initialLabresultData = function(){
+        var LabresultResource = ResourceFactory.labresultChartPoint()
+        var info = LabresultResource.get({userid: userid, appid: appid, year: year, month: month, amount: amount, title: $stateParams.ref }, function(){
+            $scope.results = info.data
+        })
+        
+    }
+
+
+    initialLabresultData()
+    // var LabresultResource = ResourceFactory.labresultChartPoint()
+    // var today = new Date();
+    // var info = LabresultResource.get(function () {
+    //     console.log("info: ", info)
+    //     $scope.lastcheck_cre = info.lastcheck
+    //     $scope.labels = info.dates
+    //     var limit = [info.limit, info.limit, info.limit, info.limit, info.limit, info.limit, info.limit]
+    //     $scope.data = [info.points, limit]
+    // });
+    // $scope.series = ['Limit (mg/dL)', 'Lucksika (mg/dL)'];
+    // $scope.options = {
+    //         elements:{
+    //             line: {
+    //                 fill: false
+    //             }
+    //         },
+    //         title:{
+    //             display: true,
+    //             text: "hello"
+    //         }
+    //     }
+
+}
+function LineBunCtrl($scope){
+    var date = new Date();
+    var lastcheck_bun = new Date(date);   
+    lastcheck_bun.setDate(date.getDate() - 20);
+    $scope.lastcheck_bun = lastcheck_bun;
+    $scope.labels = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    $scope.series = ['Limit (mg/dL)', 'Lucksika (mg/dL)'];
+    $scope.data = [
+    [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
+    [10, 9, 15, 25, 22, 18, 11, 15, 12, 11, 9, 25, 10, 9, 15, 25, 22, 18, 11, 15, 12, 11, 9, 25, 10, 9, 15, 25, 22, 18, 11, 15, 12, 11, 9, 25]
+    ]; 
+}
+function BarWeightCtrl($scope){
+    var date = new Date();
+    var lastcheck_bun = new Date(date);   
+    lastcheck_bun.setDate(date.getDate() - 20);
+    $scope.lastcheck_bun = lastcheck_bun;
+    $scope.labels = ['2010', '2011', '2012', '2013', '2014', '2015', '2016'];
+    $scope.series = ['You (kg)'];
+    $scope.data = [
+    [45, 50, 55, 60, 65, 61, 52]
+    ];  
+    $scope.colours = [{
+        backgroundColor: [
+            'rgba(255, 99, 132, 0.2)',
+            'rgba(54, 162, 235, 0.2)',
+            'rgba(255, 206, 86, 0.2)',
+            'rgba(75, 192, 192, 0.2)',
+            'rgba(153, 102, 255, 0.2)',
+            'rgba(255, 159, 64, 0.2)'
+        ],
+        borderColor: [
+            'rgba(255,99,132,1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 206, 86, 1)',
+            'rgba(75, 192, 192, 1)',
+            'rgba(153, 102, 255, 1)',
+            'rgba(255, 159, 64, 1)'
+        ],
+        hoverBackgroundColor:[
+            'rgba(255,99,132,1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 206, 86, 1)',
+            'rgba(75, 192, 192, 1)',
+            'rgba(153, 102, 255, 1)',
+            'rgba(255, 159, 64, 1)'
+        ],
+        borderWidth: 1,
+
+    }];
+}
+function BarNutrientProgressCtrl ($scope){
+var date = new Date();
+    var lastcheck_bun = new Date(date);   
+    lastcheck_bun.setDate(date.getDate() - 20);
+    $scope.lastcheck_bun = lastcheck_bun;
+    $scope.labels = ['carbohydrate', 'protein', 'fat', 'sodium', 'phosphorus', 'potassium'];
+    // $scope.series = ['You (kg)', 'You (kg)1', 'You (kg)2', 'You (kg)3', 'You (kg)4', 'You (kg)5'];
+    $scope.data = [
+        [45, 50, 55, 60, 65, 61]
+    ];  
+    $scope.colours = [{
+        backgroundColor: [
+            'rgba(255, 99, 132, 0.2)',
+            'rgba(54, 162, 235, 0.2)',
+            'rgba(255, 206, 86, 0.2)',
+            'rgba(75, 192, 192, 0.2)',
+            'rgba(153, 102, 255, 0.2)',
+            'rgba(255, 159, 64, 0.2)'
+        ],
+        borderColor: [
+            'rgba(255,99,132,1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 206, 86, 1)',
+            'rgba(75, 192, 192, 1)',
+            'rgba(153, 102, 255, 1)',
+            'rgba(255, 159, 64, 1)'
+        ],
+        hoverBackgroundColor:[
+            'rgba(255,99,132,1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 206, 86, 1)',
+            'rgba(75, 192, 192, 1)',
+            'rgba(153, 102, 255, 1)',
+            'rgba(255, 159, 64, 1)'
+        ],
+        borderWidth: 1,
+
+    }];
+}
+function PieNutrientProgressWidgetCtrl($scope, ResourceFactory, FormatDateFactory, NutrientPieChartService, currentUser){
+    var userid = currentUser.userid
+    var appid = currentUser.userid
+    var today = new Date() 
+    $scope.lastcheck = today
+    var date = FormatDateFactory.formatDate(today)
+    $scope.result = {
+        carbohydrate: 0,
+        protein: 0,
+        fat: 0,
+        calories: 0,
+        sodium: 0,
+        potassium: 0,
+        phosphorus: 0
+    }
+
+    $scope.limit = {
+        carbohydrate: {"maxValue": 0, "minValue": 0},
+        protein: {"maxValue": 0, "minValue": 0},
+        fat: {"maxValue": 0, "minValue": 0},
+        calories: {"maxValue": 0, "minValue": 0},
+        sodium: {"maxValue": 0, "minValue": 0},
+        potassium: {"maxValue": 0, "minValue": 0},
+        phosphorus: {"maxValue": 0, "minValue": 0}
+    }
+
+    var initialProgressWidgetView = function(){
+        var getMealNutrientResource = ResourceFactory.nutrientMealProgress()
+        var obj = getMealNutrientResource.get({userid: userid, appid: appid, date: date}, function(){
+            if(!angular.equals({}, obj.data)){
+                console.log("not empty")
+                $scope.result = obj.data
+                $scope.limit = obj.limit
+            }
+            console.log($scope.result)
+            console.log($scope.limit)
+        })
+        
+    }
+
+    initialProgressWidgetView()
+
+
+}
+function PieNutrientWidgetCtrl($scope, ResourceFactory, FormatDateFactory, NutrientPieChartService, currentUser){
+    var userid = currentUser.userid
+    var appid = currentUser.appid
+    var today = new Date()
+    $scope.lastcheck = today
+    var mealList = ['breakfast', 'lunch', 'dinner']
+    var initialPieChartView = function(){
+        var hour = today.getHours()
+        var _meal = ''
+        if(hour >= 6 && hour < 12){
+            mealIndex = 0
+        }else if(hour >= 12 && hour < 17){
+            mealIndex = 1
+        }else {
+            mealIndex = 2
+        }
+        var date = FormatDateFactory.formatDate(today)
+        var getMealNutrientResource = ResourceFactory.nutrientMeal()
+        var obj = getMealNutrientResource.get({userid: userid, appid: appid, date: date, meal: mealList[mealIndex]}, function (){
+            if(obj.data){
+                $scope.meal = NutrientPieChartService.generatePieChartAttr(mealList[mealIndex], obj)  
+                $scope.noData = false           
+            }else {
+                //check previous meal
+                mealIndex = (mealIndex - 1) < 0 ? 2 : mealIndex - 1
+                obj = getMealNutrientResource.get({userid: userid, appid: appid, date: date, meal: mealList[mealIndex]}, function(){
+                    if(obj.data){
+                        $scope.meal = NutrientPieChartService.generatePieChartAttr(mealList[mealIndex], obj)  
+                        $scope.noData = false 
+                    }else {
+                        $scope.noData = true
+                    }
+                })
+            }
+        })
+    }
+    initialPieChartView();
+
+}
+function PieNutrientCtrl($scope, ResourceFactory, FormatDateFactory, NutrientPieChartService, currentUser){
+    var userid = currentUser.userid
+    var appid = currentUser.appid
+
+    var getMealNutrientResource = ResourceFactory.nutrientMeal()
+
+    var mealList = [
+            {id: 1, title: 'breakfast'},
+            {id: 2, title: 'lunch'},
+            {id: 3, title: 'dinner'},
+            {id: 4, title: 'all'},
+        ]
+    $scope.meal_list = mealList
+    
+
+    var initialPieChartView = function(){
+        console.log("initial")
+        var today = new Date()
+        $scope.date = today
+        showAllMeal(FormatDateFactory.formatDate(today))
+    }
+
+    var showAllMeal = function(date){
+        var cntNull = 0
+        var noData = true
+        mealList.forEach(function(_meal) {
+            // 'all' isn't meal in hbase
+            if(_meal.title != 'all'){                
+                var obj = getMealNutrientResource.get({userid: userid, appid: appid, date: date, meal: _meal.title}, function(){
+                    console.log("showAllMeal")
+                    if(obj.data != null){
+                        $scope[_meal.title] = NutrientPieChartService.generatePieChartAttr(_meal.title, obj)
+                        $scope.noData = false
+                    }else {
+                        cntNull++
+                        if(cntNull == mealList.length - 1){
+                            $scope.noData = true
+                        }
+                    }
+                })
+                cntNull = 0
+            }
+        })
+    }
+    /*
+         initial pie chart today data 
+    */
+    initialPieChartView();
+
+    $scope.getNutreintMealAt = function(){
+        var date = FormatDateFactory.formatDate($scope.date)
+        var meal = $scope.meal
+        mealList.forEach(function(_meal) {
+            $scope[_meal.title] = {}
+        })
+        if(meal == undefined || meal.title == 'all'){
+            showAllMeal(date)
+        }else{
+            var obj = getMealNutrientResource.get({userid: userid, appid: appid, date: date, meal: meal.title}, function (){
+                if(obj.data){
+                    $scope[meal.title] = NutrientPieChartService.generatePieChartAttr(meal.title, obj)  
+                    $scope.noData = false           
+                }else {
+                    $scope.noData = true
+                }
+            })
+        }
+    
+    }
+}
+
+function LineNutrientCtrl($scope, ResourceFactory, FormatDateFactory, currentUser){
+    var userid = currentUser.userid
+    var appid = currentUser.appid
+
+    var weight = 50
+    $scope.show = false
+    $scope.nutrient_list = [
+        {id: 1, title: 'protein', limit: {min: weight*1.1, max: weight*1.4}},
+        {id: 2, title: 'carbohydrate', limit: null},
+        {id: 3, title: 'fat', limit: null},
+        {id: 4, title: 'sodium', limit: {min: 2, max: 3}},
+        {id: 5, title: 'potassium', limit: {min: weight*70/1000, max: weight*90/1000}},
+        {id: 6, title: 'phosphorus', limit: {min: null, max: weight*17/1000}}
+    ]
+
+    var date = new Date();
+    $scope.labels = ["January", "February", "March", "April", "May", "June", "July"];
+    $scope.series = ['Limit (mg/dL)', 'Lucksika (mg/dL)'];
+    $scope.data = [
+        [20, 20, 20, 20, 20, 20, 20],
+        [10, 9, 15, 25, 22, 18, 11]
+    ]; 
+    var date = FormatDateFactory.formatDate($scope.date)
+    var title = $scope.nutrient
+    $scope.options = {
+        elements:{
+            line: {
+                fill: false
+            }
+        },
+        title:{
+            display: true,
+            text: "Nutrient title"
+        }
+    }
+
+}
+
+function PieMineralCtrl($scope){
+    var date = new Date();
+    $scope.today = date;
+    $scope.labels = ["Sodium", "Potassium", "Phosphorus"];
+    $scope.data = [5, 25, 15];   
+}
