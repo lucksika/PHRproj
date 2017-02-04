@@ -125,19 +125,28 @@ function ScheduleCtrl($scope){
 function UpcomingEventWidgetCtrl($scope, EventService,  ResourceFactory, currentUser){
     var userid = currentUser.userid
     var appid = currentUser.appid
-    var month = "01"
-    var year = "2017"
-    var today = moment(new Date()).format('YYYY-MM-DD')
+    var today = new Date()
+    var year = today.getFullYear().toString()
+    var month = '0' + (today.getMonth() + 1).toString()
 
+    var _today = moment(today).format('YYYY-MM-DD')
+    
+    $scope.noData = false
     var appointmentResource = ResourceFactory.appointment()
     var eventsList = appointmentResource.get({userid: userid, appid: appid, month: month, year: year}, function (){
-        $scope.eventsWidget = eventsList.data
+        console.log(eventsList.data)
+        var eventLists = eventsList.data
                     .filter(function(event){
-                        return moment(new Date(event.date)).isSameOrAfter(today)
+                        return moment(new Date(event.date)).isSameOrAfter(_today)
                     }).map(function(event){
                         return EventService.createEventsObject(event, 'widgets')
                     })
-           
+        if(eventLists.length > 0){
+            $scope.eventsWidget = eventLists   
+        }else{
+            $scope.noData = true
+        }
+        
         });
 }
 function TimelineCtrl($scope, EventService, ResourceFactory, currentUser){
@@ -239,6 +248,7 @@ function InputFormCtrl($scope, ResourceFactory, modalProvider, currentUser){
             information = angular.toJson(createDataObj('description', $scope.appointment)) 
             appointmentResource.save(information)
         }else if($scope.nutrient != undefined){
+            console.log("save")
             nutrient = angular.toJson(createDataObj('nutrients', $scope.nutrient))
             postNutrientResource.save(nutrient)
             nutrient = ''

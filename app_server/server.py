@@ -71,55 +71,71 @@ def nutrientdata():
 @app.route('/nutrient/chart/image', methods=['GET', 'POST'])
 def nutrientImage():
 	maxDateAmount = 7
-	if request.method == 'POST':
+	userid = ''
+	appid = ''
+	string_date = ''
+	title = ''
+	amount = 0
+	result = ''
+
+	if request.method == 'GET':
+		userid = request.args.get("userid")
+		appid =  request.args.get("appid")
+		string_date = request.args.get("date")
+		title = request.args.get("title")
+		amount = int(request.args.get("amount")) if request.args.get("amount") else 0
+		amount = (amount if amount < maxDateAmount and amount > 0 else maxDateAmount) + 1
+
+
+	elif request.method == 'POST':
 		obj = request.json
-		# print json.dumps(obj, indent=4, separators=(',', ': '))
+		
 		userid = obj.get("userid")
 		appid = obj.get("appid")
 		title = obj.get("title")
 		string_date = obj.get("date")
-		amount = int(obj.get("amount"))
+		amount = int(obj.get("amount")) if obj.get("amount") else 0
 		amount = (amount if amount < maxDateAmount and amount > 0 else maxDateAmount) + 1
-		# print "amount: " , amount
-
-
-
-		end = dt.datetime.strptime(string_date, "%Y-%m-%d")
-		end = end + dt.timedelta(days=1)
-
-		columnFamily = "nutrient"
-		limit = mock.get_nutrient_limit()
-		maxValue = limit.get(title).get("maxVal")
-		minValue = limit.get(title).get("minVal")
-		#start row - end row
-		begin = end - dt.timedelta(days=(amount))
-		# date = begin.strftime("%Y-%m-%d")
 		
-		start_row = base64.b64encode("{}_{}_{}_".format(userid, appid, begin))
-		end_row = base64.b64encode("{}_{}_{}_".format(userid, appid, end))
-		column = base64.b64encode("{}:{}".format(columnFamily, title))
-		
-		result = list(manager.fetch_part(table_nutrient, start_row, end_row, column))
 
-		if not result:
-			return jsonify(message="no data")
-		# print json.dumps(list(result), indent=4, separators=(',', ': '))
+	print amount
+	end = dt.datetime.strptime(string_date, "%Y-%m-%d")
+	end = end + dt.timedelta(days=1)
 
-		dic = service.summary_by_date(result, columnFamily, title)
-		# print json.dumps(dic, indent=4, separators=(',', ': '))
-		
-		date_value_list = service.generate_date_value_list(dic, begin, amount)
-		date_list = date_value_list[0]
-		value_list = date_value_list[1]
-		chart_title = "{} (min: {}, max: {})".format(title, minValue, maxValue)
-		# print date_value_list
-		img_path = service.generate_linechart_img(title, date_list, value_list, "Date", "Value (g/day)", chart_title, maxValue, minValue, amount)
-		
-		with open(img_path, "rb") as image_file:
-			encoded_string = base64.b64encode(image_file.read())
+	columnFamily = "nutrient"
+	limit = mock.get_nutrient_limit()
+	maxValue = limit.get(title).get("maxVal")
+	minValue = limit.get(title).get("minVal")
+	#start row - end row
+	begin = end - dt.timedelta(days=(amount))
+	# date = begin.strftime("%Y-%m-%d")
+	print appid
+	print userid
+	start_row = base64.b64encode("{}_{}_{}_".format(userid, appid, begin))
+	end_row = base64.b64encode("{}_{}_{}_".format(userid, appid, end))
+	column = base64.b64encode("{}:{}".format(columnFamily, title))
+	
+	result = list(manager.fetch_part(table_nutrient, start_row, end_row, column))
+	
+	if not result:
+		return jsonify(nodata="no data")
+	# print json.dumps(list(result), indent=4, separators=(',', ': '))
 
-		return jsonify(image=encoded_string)
-		# return send_file(img_path, mimetype='image/png')
+	dic = service.summary_by_date(result, columnFamily, title)
+	# print json.dumps(dic, indent=4, separators=(',', ': '))
+	
+	date_value_list = service.generate_date_value_list(dic, begin, amount)
+	date_list = date_value_list[0]
+	value_list = date_value_list[1]
+	chart_title = "{} (min: {}, max: {})".format(title, minValue, maxValue)
+	# print date_value_list
+	img_path = service.generate_linechart_img(title, date_list, value_list, "Date", "Value (g/day)", chart_title, maxValue, minValue, amount)
+	
+	with open(img_path, "rb") as image_file:
+		encoded_string = base64.b64encode(image_file.read())
+
+	return jsonify(image=encoded_string)
+	# return send_file(img_path, mimetype='image/png')
 		# return "ok"
 
 	return jsonify(success="true")
@@ -151,6 +167,43 @@ def nutrientProgress():
 		
 		return jsonify(data=data, limit=limit)
 
+@app.route('/nutrient/chart/points', methods=['GET'])
+def chartnutrient():
+	maxDateAmount = 7
+	if request.method == 'GET':
+		userid = request.args.get("userid")
+		appid =  request.args.get("appid")
+		string_date = request.args.get("date")
+		title = request.args.get("title")
+		amount = int(request.args.get("amount")) if request.args.get("amount") else 0
+		amount = (amount if amount < maxDateAmount and amount > 0 else maxDateAmount) + 1
+		print amount
+
+		end = dt.datetime.strptime(string_date, "%Y-%m-%d")
+		end = end + dt.timedelta(days=1)
+
+		columnFamily = "nutrient"
+		limit = mock.get_nutrient_limit()
+		maxValue = limit.get(title).get("maxVal")
+		minValue = limit.get(title).get("minVal")
+		#start row - end row
+		begin = end - dt.timedelta(days=(amount))
+		# date = begin.strftime("%Y-%m-%d")
+		
+		start_row = base64.b64encode("{}_{}_{}_".format(userid, appid, begin))
+		end_row = base64.b64encode("{}_{}_{}_".format(userid, appid, end))
+		column = base64.b64encode("{}:{}".format(columnFamily, title))
+		
+		result = list(manager.fetch_part(table_nutrient, start_row, end_row, column))
+		print result
+		if not result:
+			return jsonify(nodata="no data")
+		# print json.dumps(list(result), indent=4, separators=(',', ': '))
+
+		dic = service.summary_by_date(result, columnFamily, title)
+		data_chart = service.generate_info_nutrient_linechart(dic, minValue, maxValue, begin, amount)
+
+		return jsonify(chart=data_chart) 
 #######
 ####### Result 
 #######
@@ -173,15 +226,14 @@ def chartpoint():
 		start_row = base64.b64encode("{}_{}_{}".format(userid, appid, begin))
 		end_row = base64.b64encode("{}_{}_{}".format(userid, appid, end))
 		
-		if title:
+		if not title:
+			data = manager.fetch_part(table_result, start_row, end_row)
+		else:
 			column = base64.b64encode("testresults:"+title)
 			data = manager.fetch_part(table_result, start_row, end_row, column)
-		else:
-			data = manager.fetch_part(table_result, start_row, end_row)
 
-		print data
 		result = service.group_by_key(data, 'testresults')
-		info_linechart = service.generate_info_linechart(result)
+		info_linechart = service.generate_info_result_linechart(result)
 		
 		# points = [0.5, 0.8, 1.2, 1.5, 1.7, 2.0, 1.8]
 		# dates = ["2015-03-20", "2015-04-18", "2015-05-22", "2015-06-21", "2015-07-20"]
@@ -195,7 +247,7 @@ def chartpoint():
 		# print (json.loads(obj)).get("view_type")
 		# return jsonify(points=points,dates=dates,lastcheck=lastcheck,limit=limit,unit=unit)
 		# return jsonify(success="true")
-		return jsonify(data=info_linechart)
+		return jsonify(chart=info_linechart, data=result)
 
 @app.route('/result/chart/image', methods=['GET'])
 def chartimg():

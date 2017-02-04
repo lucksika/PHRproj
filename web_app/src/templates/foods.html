@@ -1,3 +1,10 @@
+<style type="text/css">
+.chosen-container {
+	margin-bottom: auto !important;
+}
+div.inline { float:left; }
+.clearBoth { clear:both; }
+</style>
 <div class="row">
 	<div class="result-chart" id="pie-chart" ng-controller="PieNutrientCtrl">
 		<div class="panel panel-default">
@@ -7,36 +14,35 @@
 				</a>
 			</div>
 			<div class="panel-body">
-				<div class="row">
-				<div class="form-group  col-md-4"">
-					<span class="subtopic">Date: </span>
-					<md-datepicker md-placeholder="Enter date" md-open-on-focus ng-model="date"></md-datepicker>
-				</div>
-				<div class="form-group col-md-4">
-	  				<span class="subtopic">Meal: </span>
-					<select chosen width="'50% !important'" placeholder-text-single="'All'" no-results-text="'Could not find :('" ng-model="meal" ng-options="meal.title for meal in meal_list track by meal.id">
-					</select>
-					<button style="margin-left: 20px;" class="btn btn-info" ng-click="getNutreintMealAt()">Get</button>
-				</div>
+				<div class="row col-md-12">
+						<span class="subtopic">Meal: </span>
+						<select chosen width="'20% !important'" placeholder-text-single="'All'" no-results-text="'Could not find :('" ng-model="meal" ng-options="meal.title for meal in meal_list track by meal.id">
+						</select>
+						&nbsp;
+						<span class="subtopic">Date: </span>
+						<md-datepicker md-placeholder="Enter date" md-open-on-focus ng-model="date"></md-datepicker>
+						&nbsp;
+						<button style="margin-left: 20px;" class="btn btn-info" ng-click="getNutreintMealAt()">Get</button>
+					
 
 				</div>
 				<div class="row">
-				<div class="chart-container row">
-				<h3 style="margin-left: 20px;" ng-if="noData"><span class="label label-warning">No Data</span></h3>
-				<div ng-if="breakfast" class="col-md-4">
-					<canvas class="chart chart-pie" chart-data="breakfast.data" chart-labels="breakfast.labels" chart-colors="breakfast.colours" chart-options="breakfast.options">
-					</canvas>
-				</div>
-				<div ng-if="lunch" class="col-md-4">
-					<canvas class="chart chart-pie" chart-data="lunch.data" chart-labels="lunch.labels" chart-colors="lunch.colours" chart-options="lunch.options">
-					</canvas>
-				</div>
-				<div ng-if="dinner" class="col-md-4">
-					<canvas class="chart chart-pie" chart-data="dinner.data" chart-labels="dinner.labels" chart-colors="dinner.colours" chart-options="dinner.options">
-					</canvas>
-				</div>
-				</div>
-				
+					<div class="chart-container row">
+						<h3 style="margin-left: 20px;" ng-if="noData"><span class="label label-warning">No Data</span></h3>
+						<div ng-if="breakfast" class="col-md-4">
+							<canvas class="chart chart-pie" chart-data="breakfast.data" chart-labels="breakfast.labels" chart-colors="breakfast.colours" chart-options="breakfast.options">
+							</canvas>
+						</div>
+						<div ng-if="lunch" class="col-md-4">
+							<canvas class="chart chart-pie" chart-data="lunch.data" chart-labels="lunch.labels" chart-colors="lunch.colours" chart-options="lunch.options">
+							</canvas>
+						</div>
+						<div ng-if="dinner" class="col-md-4">
+							<canvas class="chart chart-pie" chart-data="dinner.data" chart-labels="dinner.labels" chart-colors="dinner.colours" chart-options="dinner.options">
+							</canvas>
+						</div>
+					</div>
+
 				</div>
 			</div>
 		</div>
@@ -50,28 +56,48 @@
 			</div>
 			<div class="row panel-body">
 				<div class="col-md-12" ng-controller="LineNutrientCtrl">
-					<div class="col-md-4">
-						<span class="subtopic">Date: </span>
-						<md-datepicker md-placeholder="Enter date" md-open-on-focus ng-model="date"></md-datepicker>
-					</div>
-					<div class="col-md-5">
+
 						<span class="subtopic">Nutrient: </span>
-						<select chosen width="'50% !important'" placeholder-text-single="'Choose ...'" no-results-text="'Could not find :('" ng-model="nutrient" ng-options="nutrient.title for nutrient in nutrient_list track by nutrient.id">
+						<select style="padding-right: 20px;" chosen width="'15% !important'" placeholder-text-single="'Choose ...'" no-results-text="'Could not find :('" ng-model="nutrient" ng-options="nutrient.title for nutrient in nutrient_list track by nutrient.id">
 						</select>
-						<button style="margin-left: 20px;" class="btn btn-info" ng-click="getNutreintAt()">Get</button>
+						
+						<span style="padding-left: 20px;" class="subtopic">Date: </span>
+						<md-datepicker md-placeholder="Enter date" md-open-on-focus ng-model="date"></md-datepicker>
+						
+						<span style="padding-left: 20px;" class="subtopic">from last </span>
+						<select chosen width="'5% !important'" placeholder-text-single="7" ng-model="amount" ng-options="amount for amount in [2,3,4,5,6,7]">
+						</select>
+						<span class="subtopic"> day(s)</span>
+						
+						<div class="btn-group" style="padding-left: 15px;">
+					        <label class="btn btn-primary" ng-model="buttonChecked" uib-btn-radio="'chart'" uncheckable>Line chart</label>
+					        <label class="btn btn-primary" ng-model="buttonChecked" uib-btn-radio="'image'" uib-uncheckable="uncheckable">Image</label>
+					    </div>
+					    
+						<button style="margin-left: 15px;" class="btn btn-info" ng-click="getNutreintLineChartAt()">Get</button>
+					
+					<h3 style="margin-left: 20px" ng-if="noData"><span class="label label-warning">No data</span></h3>
+					<div style="margin-top: 15px;" ng-repeat="result in results">
+					<canvas style="margin-left: 15px;width: 15px; height: 15px; background-color: #4FC3F7;"></canvas>  Your nutrient data
+					<canvas style="margin-left: 15px;width: 15px; height: 15px; background-color: #FFC400;"></canvas>  Minimum
+					<canvas style="margin-left: 15px;width: 15px; height: 15px; background-color: #F44336;"></canvas>  Maximum
+					<div ng-if="showLineChart" class="result-chart" id="line-chart">
+						<div class="panel panel-default">
+							<div class="panel-body">
+								<div class="chart-container">
+									<canvas id="line" class="chart chart-line ng-isolate-scope" chart-data="[result.points, result.min, result.max]" chart-labels="result.date" chart-legend="true" chart-click="onClick" chart-hover="onHover" chart-series="series" chart-options="options" chart-colors="colours" chart-dataset-override="override">
+									</canvas>
+								</div>
+							</div>
+						</div>
 					</div>
-					<div style="margin-top: 60px;" class="col-md-10" ng-if="show">
-					<canvas  id="line" class="chart chart-line ng-isolate-scope" chart-data="data" chart-labels="labels" chart-legend="true" chart-click="onClick" chart-hover="onHover" chart-series="series" chart-options="options">
-					</canvas>		
 					</div>
-				</div>
-				<div ng-controller="GetImageCtrl">
-					<button class="btn btn-default" ng-click="getImg()">Image</button>
-					<img ng-if="myImage" style="width: 500px; height: 550px;" class="col-md-12" ng-src="data:image/png;base64,{{myImage}}"><br><br>
+					<div ng-controller="GetImageCtrl">
+						<img ng-if="myImage" class="col-md-12" ng-src="data:image/png;base64,{{myImage}}">
+					</div>
 				</div>
 			</div>
 		</div>
+
+
 	</div>
-	
-	
-</div>

@@ -7,8 +7,8 @@
 angular
  .module('RDash')
  .controller('GetImageCtrl', ['$scope', 'ResourceFactory', GetImageCtrl])
- .controller('LabresultCtrl', ['$scope', 'ResourceFactory', 'currentUser', LabresultCtrl])
- .controller('LabResultDetailCtrl', ['$scope', '$state', '$stateParams', 'ResourceFactory', 'currentUser', LabResultDetailCtrl])
+ .controller('LabresultCtrl', ['$scope', 'ResourceFactory', 'currentUser','FormatDateFactory' , LabresultCtrl])
+ .controller('LabResultDetailCtrl', ['$scope', '$state', '$stateParams', 'ResourceFactory', 'currentUser', 'FormatDateFactory', LabResultDetailCtrl])
  .controller('LineBunCtrl', ['$scope', LineBunCtrl])
  .controller('BarWeightCtrl', ['$scope', BarWeightCtrl])
  .controller('BarNutrientProgressCtrl', ['$scope', BarNutrientProgressCtrl])
@@ -80,13 +80,13 @@ function KnobWaterChartCtrl($scope){
     };
 }
 
-function LabresultCtrl($scope, ResourceFactory, currentUser){
+function LabresultCtrl($scope, ResourceFactory, currentUser, FormatDateFactory){
     var today = new Date()
     var userid = currentUser.userid
     var appid = currentUser.appid
     var year = today.getFullYear().toString()
     var month = '0' + (today.getMonth() + 1).toString()
-    var amount = 3
+    var amount = 4
     $scope.options = {
             elements:{
                 line: {
@@ -99,6 +99,20 @@ function LabresultCtrl($scope, ResourceFactory, currentUser){
                     // pointBackgroundColor: '#F44336'
                 }
             },
+            scales: {
+                yAxes: [{
+                    scaleLabel: {
+                    display: true,
+                    labelString: 'Value (mg/dL)'
+                    }
+                }],
+                xAxes: [{
+                    scaleLabel: {
+                    display: true,
+                    labelString: 'Date'
+                    }
+                }]
+            }    
             
 
         }
@@ -106,18 +120,18 @@ function LabresultCtrl($scope, ResourceFactory, currentUser){
     // var b = ['#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0']
     
     // $scope.override = [{
-    //     pointBackgroundColor: a,
+    //     xAxisID: 'TEST',
     // },{
     //     pointBackgroundColor: b,
     // }]
     
-    $scope.colours = ['#4FC3F7', '#FFC400']
+    $scope.colours = ['#4FC3F7', '#F44336']
     
-    $scope.series = ['Limit (mg/dL)', 'Lucksika (mg/dL)']
+    $scope.series = ['Lucksika (mg/dL)', 'Limit (mg/dL)']
     var initialLabresultData = function(){
         var LabresultResource = ResourceFactory.labresultChartPoint()
         var info = LabresultResource.get({userid: userid, appid: appid, year: year, month: month, amount: amount}, function(){
-            $scope.results = info.data
+            $scope.results = info.chart
         })
         
     }
@@ -127,7 +141,7 @@ function LabresultCtrl($scope, ResourceFactory, currentUser){
 
 }
 
-function LabResultDetailCtrl($scope, $state, $stateParams, ResourceFactory, currentUser){
+function LabResultDetailCtrl($scope, $state, $stateParams, ResourceFactory, currentUser, FormatDateFactory){
     console.log("$stateParams.ref: ", $stateParams.ref)
     var today = new Date()
     var userid = currentUser.userid
@@ -142,49 +156,65 @@ function LabResultDetailCtrl($scope, $state, $stateParams, ResourceFactory, curr
                 line: {
                     fill: false,
                     borderWidth: 5,
-
                 },
                 point:{
                     radius: 5,
                     // pointBackgroundColor: '#F44336'
                 }
-            },
+            }, 
+            scales: {
+                yAxes: [{
+                    scaleLabel: {
+                    display: true,
+                    labelString: 'Value (g)'
+                    }
+                }],
+                xAxes: [{
+                    scaleLabel: {
+                    display: true,
+                    labelString: 'Date'
+                    }
+                }]
+            } 
             
         }
-    $scope.colours = ['#4FC3F7', '#FFC400']
+    $scope.colours = ['#4FC3F7', '#F44336']
     
-    $scope.series = ['Limit (mg/dL)', 'Lucksika (mg/dL)']        
+    $scope.series = ['Lucksika (mg/dL)', 'Limit (mg/dL)'] 
+
+    var createObjforTable = function(tableObj){
+        var arr = []
+        for(var key in tableObj){
+            var obj = {}
+            obj.date = FormatDateFactory.formatDateTable(new Date(key))
+
+            var data = tableObj[key].split(',') //[value, limit]
+            obj.value = data[0]
+
+            var ol = parseFloat(data[0]) - parseFloat(data[1])
+            if(ol > 0){
+                obj.overlimit = "over limit: " + ol.toFixed(2);
+            }else{
+                obj.overlimit = "-"; 
+            }
+            arr.push(obj)
+
+            // if(key == )
+        }
+        return arr
+    }       
     var initialLabresultData = function(){
         var LabresultResource = ResourceFactory.labresultChartPoint()
         var info = LabresultResource.get({userid: userid, appid: appid, year: year, month: month, amount: amount, title: $stateParams.ref }, function(){
-            $scope.results = info.data
+            $scope.results = info.chart
+            $scope.table = createObjforTable(info.data[$stateParams.ref])
+            
         })
         
     }
 
-
     initialLabresultData()
-    // var LabresultResource = ResourceFactory.labresultChartPoint()
-    // var today = new Date();
-    // var info = LabresultResource.get(function () {
-    //     console.log("info: ", info)
-    //     $scope.lastcheck_cre = info.lastcheck
-    //     $scope.labels = info.dates
-    //     var limit = [info.limit, info.limit, info.limit, info.limit, info.limit, info.limit, info.limit]
-    //     $scope.data = [info.points, limit]
-    // });
-    // $scope.series = ['Limit (mg/dL)', 'Lucksika (mg/dL)'];
-    // $scope.options = {
-    //         elements:{
-    //             line: {
-    //                 fill: false
-    //             }
-    //         },
-    //         title:{
-    //             display: true,
-    //             text: "hello"
-    //         }
-    //     }
+
 
 }
 function LineBunCtrl($scope){
@@ -432,41 +462,93 @@ function PieNutrientCtrl($scope, ResourceFactory, FormatDateFactory, NutrientPie
 }
 
 function LineNutrientCtrl($scope, ResourceFactory, FormatDateFactory, currentUser){
+    $scope.noData = false
+    $scope.myImage = false
     var userid = currentUser.userid
     var appid = currentUser.appid
+    var amount
+    var title
+    var date
 
-    var weight = 50
-    $scope.show = false
+    $scope.showLineChart = false
     $scope.nutrient_list = [
-        {id: 1, title: 'protein', limit: {min: weight*1.1, max: weight*1.4}},
-        {id: 2, title: 'carbohydrate', limit: null},
-        {id: 3, title: 'fat', limit: null},
-        {id: 4, title: 'sodium', limit: {min: 2, max: 3}},
-        {id: 5, title: 'potassium', limit: {min: weight*70/1000, max: weight*90/1000}},
-        {id: 6, title: 'phosphorus', limit: {min: null, max: weight*17/1000}}
+        {id: 1, title: 'protein'},
+        {id: 2, title: 'carbohydrate'},
+        {id: 3, title: 'fat'},
+        {id: 4, title: 'sodium'},
+        {id: 5, title: 'potassium'},
+        {id: 6, title: 'phosphorus'}
     ]
+    
+    $scope.getNutreintLineChartAt = function(){
+        amount = $scope.amount
+        title = $scope.nutrient.title
+        date = FormatDateFactory.formatDate(new Date($scope.date))
+        var params = {
+            userid: userid,
+            appid: appid,
+            date: date,
+            title: title,
+            amount: amount
+        }
+        
+        if($scope.buttonChecked == 'chart'){
+            $scope.myImage = false
+            var getLineChartNutrientResource = ResourceFactory.nutrientMealLineChart()
+            var info = getLineChartNutrientResource.get(params, function(){
+                if(info.chart){
+                    console.log(info.chart)
+                    $scope.results = info.chart
+                    $scope.showLineChart = true    
+                }else if(info.nodata){
+                    $scope.noData = true
+                }
+            }) 
+        }else if($scope.buttonChecked == 'image'){
+            $scope.showLineChart = false 
+            var imageResource = ResourceFactory.nutrientImage()
+            var image = imageResource.get(params, function(){
+                if(image.image){
+                    $scope.myImage = image.image
+                }else if(image.nodata){
+                    $scope.noData = true
+                }
+            })
 
-    var date = new Date();
-    $scope.labels = ["January", "February", "March", "April", "May", "June", "July"];
-    $scope.series = ['Limit (mg/dL)', 'Lucksika (mg/dL)'];
-    $scope.data = [
-        [20, 20, 20, 20, 20, 20, 20],
-        [10, 9, 15, 25, 22, 18, 11]
-    ]; 
-    var date = FormatDateFactory.formatDate($scope.date)
-    var title = $scope.nutrient
-    $scope.options = {
-        elements:{
-            line: {
-                fill: false
-            }
-        },
-        title:{
-            display: true,
-            text: "Nutrient title"
+        }else {
+            alert("Please select Line chart or Image")
         }
     }
 
+    $scope.options = {
+            elements:{
+                line: {
+                    fill: false,
+                    borderWidth: 5,
+                },
+                point:{
+                    radius: 5,
+                    // pointBackgroundColor: '#F44336'
+                }
+            },
+            scales: {
+                yAxes: [{
+                    scaleLabel: {
+                    display: true,
+                    labelString: 'Value (g)'
+                    }
+                }],
+                xAxes: [{
+                    scaleLabel: {
+                    display: true,
+                    labelString: 'Date'
+                    }
+                }]
+            }     
+        }
+
+    $scope.colours = ['#4FC3F7', '#FFC400', '#F44336']
+    $scope.series = ['Lucksika (g)', 'Minimum (g)', 'Maximum (g)'] 
 }
 
 function PieMineralCtrl($scope){

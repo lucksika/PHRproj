@@ -38,8 +38,8 @@ def fetch_from(table, start_row, *args):
 	table = c.table(table)
 	if not args:
 		return table.fetch_all_rows(with_row_id=True, scanner_config='<Scanner maxVersions="1" startRow="{}" endRow="{}"></Scanner>'.format(start_row))
-
-	return table.fetch_all_rows(with_row_id=True, scanner_config='<Scanner maxVersions="1" startRow="{}" endRow="{}"><column>{}</column></Scanner>'.format(start_row, args))
+	else:
+		return table.fetch_all_rows(with_row_id=True, scanner_config='<Scanner maxVersions="1" startRow="{}" endRow="{}"><column>{}</column></Scanner>'.format(start_row, args))
 
 def fetch_part(table, start_row, end_row, *args):
 	c = starbase.Connection(host=HBASE_HOST, port=HBASE_PORT)
@@ -47,8 +47,8 @@ def fetch_part(table, start_row, end_row, *args):
 	
 	if not args:
 		return table.fetch_all_rows(with_row_id=True, scanner_config='<Scanner maxVersions="1" startRow="{}" endRow="{}"></Scanner>'.format(start_row, end_row))
-
-	return table.fetch_all_rows(with_row_id=True, scanner_config='<Scanner maxVersions="1" startRow="{}" endRow="{}"><column>{}</column></Scanner>'.format(start_row, end_row, args))
+	else:
+		return table.fetch_all_rows(with_row_id=True, scanner_config='<Scanner maxVersions="1" startRow="{}" endRow="{}"><column>{}</column></Scanner>'.format(start_row, end_row, args))
 
 def insert_data(table, rowkey, columfamily, columqualifier, value):
 	c = starbase.Connection(host=HBASE_HOST, port=HBASE_PORT)

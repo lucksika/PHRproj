@@ -13,6 +13,12 @@ angular.module('RDash')
 		nutrientMealProgress: function(){
 			return $resource('http://0.0.0.0:5000/nutrient/chart/progress');
 		},
+        nutrientMealLineChart: function(){
+            return $resource('http://0.0.0.0:5000/nutrient/chart/points');
+        },
+        nutrientImage: function(){
+            return $resource('http://127.0.0.1:5000/nutrient/chart/image');
+        },
 		labresultInfo: function(){
 			return $resource('http://0.0.0.0:5000/result/info');
 		},
@@ -34,7 +40,13 @@ angular.module('RDash')
 	return {
 		formatDate: function(dateObj){
 		    return moment(dateObj).format('YYYY-MM-DD');
-		}
+		},
+        formatDateTable: function(dateObj){
+            return moment(dateObj).format('DD MMMM YYYY');
+        },
+        formatDateGraph: function(dateObj){
+            return moment(dateObj).format('MMM DD, YY');  
+        }
 	}
 })
 .service('modalProvider', ['$uibModal', function ($uibModal){
@@ -84,8 +96,16 @@ angular.module('RDash')
             "#DBA9FF",
             "#78EABB"]
 		var minimunRatio = 5
-		var realData = Object.values(obj.data.nutrient)
-        var legendLabel = Object.keys(obj.data.nutrient)  
+
+        var nutrientList = obj.data.nutrient
+        var legendLabel = []
+        var realData = []
+        for(var key in nutrientList) {
+            legendLabel.push(key)
+            realData.push(obj.data.nutrient[key]);
+        }
+		// var realData = Object.values()
+  //       var legendLabel = Object.keys(obj.data.nutrient)  
         var attr = {}
         attr.labels = legendLabel
         attr.data = realData.map(function(d){ return d < minimunRatio ? minimunRatio : d})
@@ -122,6 +142,7 @@ angular.module('RDash')
                             
                             return obj
                         })
+                        console.log(data)
                         return data
                     }
                 }

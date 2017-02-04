@@ -4,24 +4,68 @@ import datetime as dt
 import numpy as np
 import base64
 
-def generate_info_linechart(data):
-  _data = data
-  _list = []
-  for item in data:
-    dic = {}
-    dic['title'] = item
-    dic['date'] = _data[item].keys()
-    dic['limits'] = []
-    dic['points'] = []
-    for y in _data[item].values():
-      z = np.array((y.split(',')))
-      z2 = z.astype(np.float)
-      dic.get('points').append(z2[0])
-      dic.get('limits').append(z2[1])
-    
-    _list.append(dic)
-  
-  return _list
+def generate_info_nutrient_linechart(data, minValue, maxValue, begin, amount):
+	dic = {}
+	_list = []
+	last_date = ''
+	dateList = sorted(data.keys())
+	dic['date'] = []
+	dic['points'] = []
+	dic['min'] = []
+	dic['max'] = []
+	i = 0
+	_amount = amount
+	for date in dateList:
+		_formatted_date = dt.datetime.strptime(date, "%Y-%m-%d")
+		while i < _amount:
+			_date = begin + dt.timedelta(days=i)
+			if _formatted_date != _date:
+				dic.get('date').append(_date.strftime("%Y-%m-%d"))
+				dic.get('points').append(0)
+				dic.get('min').append(minValue)
+				dic.get('max').append(maxValue)
+				i += 1
+			else:
+				break
+		last_date = dt.datetime.strptime(date, "%Y-%m-%d")
+		dic.get('date').append(date)
+		dic.get('points').append(data.get(date))
+		dic.get('min').append(minValue)
+		dic.get('max').append(maxValue)
+		i += 1
+	while i < _amount:
+		_date = last_date + dt.timedelta(days=i)
+		dic.get('date').append(_date.strftime("%Y-%m-%d"))
+		dic.get('points').append(0)
+		dic.get('min').append(minValue)
+		dic.get('max').append(maxValue)
+		i += 1
+
+	_list.append(dic)
+
+	return _list
+
+def generate_info_result_linechart(data):
+	_data = data
+	# print "data", data
+	# print "_data", _data
+	_list = []
+	for item in data:
+		dic = {}
+		dic['title'] = item
+		# print _data[item].keys()
+		dateList = sorted(_data[item].keys())
+		dic['date'] = dateList
+		dic['limits'] = []
+		dic['points'] = []
+		for date in dateList:
+			arr = np.array((_data[item].get(date).split(',')))
+			value = arr.astype(np.float)
+			dic.get('points').append(value[0])
+			dic.get('limits').append(value[1])
+		_list.append(dic)
+
+	return _list
 
 def generate_key_value(data_dic):
 	data_list = []
@@ -71,13 +115,12 @@ def group_by_key(result, columnFamily):
 			value = item.get(key).get(columnFamily).get(title)
 			# splitKey -> date			
 			date = key.split('_')[2]
-			_date = dt.datetime.strptime(date, "%Y-%m-%d").strftime("%b %d, %y")
 			
 			if title in dic:
-				dic[title].update({_date : value})
+				dic[title].update({date : value})
 			else: 
-				dic[title] = {_date : value}
-	
+				dic[title] = {date : value}
+
 	return dic
 
 def summary_by_date(result, columnFamily, title):
@@ -129,20 +172,32 @@ def generate_date_value_list(data_dic, begin, amount):
 	date_value = []
 	i = 0
 	_amount = amount
-
+	last_date = ''
+	print amount
 	for key in sorted(dic):
-		print "key, ", key
+		# print "key, ", key
 		date = dt.datetime.strptime(key, "%Y-%m-%d")
-		while True and i < _amount:
+		print "date, ", date
+		# print date
+		while i < _amount:
 			_date = begin + dt.timedelta(days=i)
+			
+			print _date
 			if date != _date:
 				graphDate.append(_date)
 				value.append(0)
 				i += 1
 			else:
 				break
+		last_date = date
 		graphDate.append(date)
 		value.append(dic.get(key))
+		i += 1
+	
+	while i < _amount:
+		_date = last_date + dt.timedelta(days=i)
+		graphDate.append(_date)
+		value.append(0)
 		i += 1
 
 	date_value.append(graphDate)
@@ -152,17 +207,18 @@ def generate_date_value_list(data_dic, begin, amount):
 def generate_linechart_img(title, date_list, value_list, xlabel, ylabel, chart_title, maxValue, minValue, amount):
 	img_path = 'img/value-{}.png'.format(title)
 	encoded_string = ""
-
+	print value_list
 	x = np.array(range(0, amount))
 	y = np.array(value_list)
-	
+
 	my_xticks = [date.strftime("%b %d, %y") for date in date_list]
 
 	plt.xticks(x, my_xticks, rotation=25, fontsize=12)
 	plt.yticks(y, fontsize=12)
 	plt.xlabel(xlabel, fontsize=12)
 	plt.ylabel(ylabel, fontsize=12)
-
+	plt.tight_layout()
+	
 	plt.title(chart_title)
 	# plt.title("sodium (min: {}, max: {})".format(minValue, maxValue))
 	plt.fill_between(x, minValue, maxValue, facecolor='#C8FFDA')
