@@ -1,3 +1,4 @@
+import simplejson as json
 import matplotlib
 import matplotlib.pyplot as plt
 import datetime as dt
@@ -47,13 +48,10 @@ def generate_info_nutrient_linechart(data, minValue, maxValue, begin, amount):
 
 def generate_info_result_linechart(data):
 	_data = data
-	# print "data", data
-	# print "_data", _data
 	_list = []
 	for item in data:
 		dic = {}
 		dic['title'] = item
-		# print _data[item].keys()
 		dateList = sorted(_data[item].keys())
 		dic['date'] = dateList
 		dic['limits'] = []
@@ -67,12 +65,30 @@ def generate_info_result_linechart(data):
 
 	return _list
 
-def generate_key_value(data_dic):
+def generate_info_exercise_barchart(data):
+	_data = data
+	_list = []
+	for item in data:
+		dic = {}
+		dic['title'] = item
+		dateList = sorted(_data[item].keys())
+		dic['date'] = dateList
+		dic['goal'] = []
+		dic['points'] = []
+		for date in dateList:
+			arr = np.array((_data[item].get(date).split(',')))
+			value = arr.astype(np.float)
+			dic.get('points').append(value[0])
+			dic.get('goal').append(value[1])
+		_list.append(dic)
+
+	return _list
+	
+def generate_key_value_appointment(data_dic):
 	data_list = []
 	for item in list(data_dic):
 		data = {}
 		for key in item:
-			print key
 			data['date'] = key.split('_')[2]
 			data['description'] = item[key]['treatment']['appointment']
 			data_list.append(data)	
@@ -101,14 +117,10 @@ def summary_per_day(result, columnFamily):
 					dic[d] = 0
 					dic[d] += float(splitKey[d])
 
-	# print dic
-
 	return dic
 
 def group_by_key(result, columnFamily):
 	dic = {}
-	flag = ''
-	state = 0
 	for item in list(result):
 		for key in item:
 			title = item.get(key).get(columnFamily).keys()[0]
@@ -123,35 +135,51 @@ def group_by_key(result, columnFamily):
 
 	return dic
 
+def get_value(item, key, columnFamily, title):
+	value = item.get(key).get(columnFamily).get(title)
+	return float(value.split(',')[0])
+def get_limit(item, key, columnFamily, title):
+	limit = (item.get(key).get(columnFamily).get(title)).split(',')
+	if len(limit) == 1 :
+		return None
+	else: return limit[1]
+
 def summary_by_date(result, columnFamily, title):
+	_result = list(result)
 	dic = {}
 	summary = 0.0
 	flag = ''
 	state = 0
-	# print "list(result), " , list(result)
-	for item in list(result):
-
+	for item in _result:
 		for key in item:
-			# splitKey -> date			
-			splitKey = key.split('_')[2]
-
-			if(flag != '' and flag != splitKey):
-				state = 2
-			if(state == 0):
-				flag = splitKey
-				summary += float(item.get(key).get(columnFamily).get(title))
-				state = 1
-			elif(state == 1):
-				summary += float(item.get(key).get(columnFamily).get(title))
-			elif(state == 2):
-				dic["{}".format(flag)] = summary
-				flag = splitKey
-				summary = 0.0
-				summary += float(item.get(key).get(columnFamily).get(title))
-				state = 1
+			if item.get(key).get(columnFamily).get(title):			
+				splitKey = key.split('_')[2]
+				if(flag != '' and flag != splitKey):
+					state = 2
+				if(state == 0):
+					flag = splitKey
+					summary += get_value(item, key, columnFamily, title)
+					state = 1
+				elif(state == 1):
+					summary += get_value(item, key, columnFamily, title)
+				elif(state == 2):
+					limit = get_limit(item, key, columnFamily, title)
+					if limit :
+						dic["{}".format(flag)] = str(summary) + ',' + str(limit)
+					else: 
+						dic["{}".format(flag)] = summary
+					flag = splitKey
+					summary = 0.0
+					summary += get_value(item, key, columnFamily, title)
+					state = 1
     
-	# last item of dictionary
-	dic["{}".format(flag)] = summary
+		if item.get(key).get(columnFamily).get(title):
+			limit = get_limit(item, key, columnFamily, title)
+			if limit :
+				dic["{}".format(flag)] = str(summary) + ',' + str(limit)
+			else: 
+				dic["{}".format(flag)] = summary
+		
 	return dic
 # dic 
 # {
@@ -166,23 +194,18 @@ def summary_by_date(result, columnFamily, title):
 
 def generate_date_value_list(data_dic, begin, amount):
 	dic = data_dic if data_dic else data_dic.append({})
-	print "dic, ", dic
 	graphDate = []
 	value = []
 	date_value = []
 	i = 0
 	_amount = amount
 	last_date = ''
-	print amount
+
 	for key in sorted(dic):
-		# print "key, ", key
 		date = dt.datetime.strptime(key, "%Y-%m-%d")
-		print "date, ", date
-		# print date
 		while i < _amount:
 			_date = begin + dt.timedelta(days=i)
 			
-			print _date
 			if date != _date:
 				graphDate.append(_date)
 				value.append(0)
@@ -207,7 +230,7 @@ def generate_date_value_list(data_dic, begin, amount):
 def generate_linechart_img(title, date_list, value_list, xlabel, ylabel, chart_title, maxValue, minValue, amount):
 	img_path = 'img/value-{}.png'.format(title)
 	encoded_string = ""
-	print value_list
+
 	x = np.array(range(0, amount))
 	y = np.array(value_list)
 

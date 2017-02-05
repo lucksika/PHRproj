@@ -28,6 +28,9 @@ angular.module('RDash')
 		labresultChartPoint: function(){
 			return $resource('http://0.0.0.0:5000/result/chart/points');
 		},
+        exercise: function(){
+            return $resource('http://0.0.0.0:5000/exercise/info');
+        },
         appointment: function(){
             return $resource('http://0.0.0.0:5000/appointment/info');
         },

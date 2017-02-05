@@ -12,6 +12,7 @@ angular
  .controller('LineBunCtrl', ['$scope', LineBunCtrl])
  .controller('BarWeightCtrl', ['$scope', BarWeightCtrl])
  .controller('BarNutrientProgressCtrl', ['$scope', BarNutrientProgressCtrl])
+ .controller('BarExerciseCtrl', ['$scope', '$rootScope', 'ResourceFactory', 'currentUser', 'FormatDateFactory', BarExerciseCtrl])
  .controller('PieNutrientCtrl', ['$scope', 'ResourceFactory', 'FormatDateFactory', 'NutrientPieChartService', 'currentUser', PieNutrientCtrl])
  .controller('PieNutrientWidgetCtrl', ['$scope', 'ResourceFactory', 'FormatDateFactory', 'NutrientPieChartService', 'currentUser', PieNutrientWidgetCtrl])
  .controller('PieNutrientProgressWidgetCtrl', ['$scope', 'ResourceFactory', 'FormatDateFactory', 'NutrientPieChartService', 'currentUser', PieNutrientProgressWidgetCtrl])
@@ -38,7 +39,81 @@ function GetImageCtrl($scope, ResourceFactory){
     }
 
 }
+function BarExerciseCtrl($scope, $rootScope, ResourceFactory, currentUser, FormatDateFactory) {
+    var userid = currentUser.userid
+    var appid = currentUser.appid
+    var date = FormatDateFactory.formatDate(new Date())
+    var amount = 7
+    var mock = {
+        "walking": "step",
+        "running": "step",
+        "squeeze ball": "time"
+    }
 
+    $scope.unit = mock
+
+    $scope.series = ['You'];
+    // $scope.colours = [ '#EF5350', '#EC407A', '#AB47BC', '#2196F3', '#3F51B5', '#673AB7', '#009688']
+    var generateOptionList = function(title){
+        return  {
+            scales: {
+                yAxes: [{
+                    scaleLabel: {
+                    display: true,
+                    labelString: 'Value ( ' + mock[title] + ' )'
+                    }
+                }],
+                xAxes: [{
+                    scaleLabel: {
+                    display: true,
+                    labelString: 'Date'
+                    }
+                }]
+            }
+        }
+    }
+    var generateColorList = function(lists){
+        var colors = {}
+        var options = {}
+        var attr = []
+        var green = '#9CCC65'
+        var yellow = '#FFF59D'
+        
+        lists.forEach(function(list){
+            color = []
+            options[list.title] = generateOptionList(list.title)
+            list.points.forEach(function(p){
+                if(p >= list.goal[0]){
+                    color.push(green)
+                }else{
+                    color.push(yellow)
+                }
+            })
+            colors[list.title] = color
+        })
+        // console.log("colors" , colors)
+        // console.log("options", options)
+        attr.push(colors)
+        attr.push(options)
+
+        return attr
+
+    }
+    
+    var initialBarExercise = function(){
+        $scope.series = ['You data'];
+        var exerciseResource = ResourceFactory.exercise()
+        var info = exerciseResource.get({userid: userid, appid: appid, date: date, amount: amount}, function(){
+            $scope.results = info.chart
+            var list = generateColorList(info.chart)
+            $scope.colours = list[0]
+            $scope.options = list[1]
+        })
+    }
+    
+    initialBarExercise()
+
+}
 function KnobRiceChartCtrl($scope){
     $scope.value = 20;
     $scope.options = {
@@ -497,7 +572,7 @@ function LineNutrientCtrl($scope, ResourceFactory, FormatDateFactory, currentUse
             var getLineChartNutrientResource = ResourceFactory.nutrientMealLineChart()
             var info = getLineChartNutrientResource.get(params, function(){
                 if(info.chart){
-                    console.log(info.chart)
+                    $scope.noData = false
                     $scope.results = info.chart
                     $scope.showLineChart = true    
                 }else if(info.nodata){
@@ -509,6 +584,7 @@ function LineNutrientCtrl($scope, ResourceFactory, FormatDateFactory, currentUse
             var imageResource = ResourceFactory.nutrientImage()
             var image = imageResource.get(params, function(){
                 if(image.image){
+                    $scope.noData = false
                     $scope.myImage = image.image
                 }else if(image.nodata){
                     $scope.noData = true

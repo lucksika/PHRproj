@@ -24,6 +24,7 @@ CORS(app)
 table_nutrient = 'nutrients'
 table_result = 'results'
 table_information = 'information'
+table_exercise = 'exercise'
 
 @app.route('/')
 @cross_origin
@@ -328,6 +329,9 @@ def resultdata():
 		check_date = '2015-12-23'
 		return jsonify(title=title,value=value,limit=limit,check_date=check_date)
 
+#######
+####### Information 
+#######
 @app.route('/appointment/info', methods=['GET', 'POST'])
 def appointment():
 	if request.method == 'POST':
@@ -361,7 +365,7 @@ def appointment():
 		
 		data = manager.fetch_part(table_information, start_row, end_row, column)
 
-		data_json = service.generate_key_value(data)
+		data_json = service.generate_key_value_appointment(data)
 		
 		
 		return jsonify(data=data_json)
@@ -398,6 +402,71 @@ def profile():
 		data = manager.fetch(table_information, rowkey, column)
 
 		return jsonify(data=data)
+
+#######
+####### Exercise
+#######
+@app.route('/exercise/info', methods=['GET', 'POST'])
+def exercise():
+	if request.method == 'POST':
+		obj = request.json
+		print request
+
+		userid = obj.get("userid")
+		appid = obj.get("appid")
+		date = obj.get("date")
+		activity = obj.get("activity")
+
+		title = activity.get("title")
+		value = activity.get("value")
+		goal = activity.get("goal")
+		
+		time = dt.datetime.now().strftime("%H:%M:%S")
+		
+		rowkey = userid + "_" + appid + "_" + date + "_" + time
+		_value = str(value) + ',' + str(goal)
+
+		manager.insert_data(table_exercise, rowkey, 'activity', title, _value)
+
+		print json.dumps(obj, indent=4, separators=(',', ': '))
+
+		return jsonify(success="true")
+
+	elif request.method == 'GET':
+		print "GET"
+		maxDateAmount = 7
+		userid = request.args.get("userid")
+		appid =  request.args.get("appid")
+		title =  request.args.get("title")
+		string_date = request.args.get("date")
+		amount = request.args.get("amount")
+		amount = (amount if amount < maxDateAmount and amount > 0 else maxDateAmount) + 1
+
+		end = dt.datetime.strptime(string_date, "%Y-%m-%d")
+		end = end + dt.timedelta(days=1)
+		begin = end - dt.timedelta(days=(amount))
+
+		start_row = base64.b64encode("{}_{}_{}_".format(userid, appid, begin))
+		end_row = base64.b64encode("{}_{}_{}_".format(userid, appid, end))
+		
+		
+		if not title:
+			result = manager.fetch_part(table_exercise, start_row, end_row)
+			_result = list(result)
+			keys = service.group_by_key(_result, "activity").keys()
+			data = {}
+			for _title in keys:
+				data[_title] = service.summary_by_date(_result, 'activity', _title)
+				
+		else:
+			data = {}
+			column = base64.b64encode("{}:{}".format('activity', title))
+			result = manager.fetch_part(table_exercise, start_row, end_row, column)
+			data[title] = service.summary_by_date(result, 'activity', title)
+
+		chart = service.generate_info_exercise_barchart(data)
+
+		return jsonify(chart=chart)
 
 if __name__  == '__main__':
 	app.run(host='0.0.0.0', port=5000, debug=True)	

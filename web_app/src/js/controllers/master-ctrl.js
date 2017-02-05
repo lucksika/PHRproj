@@ -180,8 +180,9 @@ function InputFormCtrl($scope, ResourceFactory, modalProvider, currentUser){
         type_list: [
             {id: 1, title: 'Results', template: 'templates/inputform/labresults.html'},
             {id: 2, title: 'Nutrient', template: 'templates/inputform/nutrient.html'},
-            {id: 3, title: 'Appointment', template: 'templates/inputform/appointment.html'},
-            {id: 4, title: 'Profile', template: 'templates/inputform/profile.html'}
+            {id: 3, title: 'Exercise', template: 'templates/inputform/exercise.html'},
+            {id: 4, title: 'Appointment', template: 'templates/inputform/appointment.html'},
+            {id: 5, title: 'Profile', template: 'templates/inputform/profile.html'}
         ],
         labresults_list: [
             {id: 1, title: 'creatinine', unit: 'mm/dL', limit: 1.5},
@@ -197,20 +198,24 @@ function InputFormCtrl($scope, ResourceFactory, modalProvider, currentUser){
             {id: 11, title: 'water', unit: 'lt', limit: "3"},
             {id: 12, title: 'weight', unit: 'kg', limit: "60"},
             {id: 13, title: 'glucose blood level', unit: 'mmol', limit: "200"},
-            // {id: 14, title: 'symtom', unit: '', limit: ""}
         ],
         meal_list: [
             {id: 1, title: 'breakfast'},
             {id: 2, title: 'lunch'},
             {id: 3, title: 'dinner'}
+        ],
+        exercise_list: [
+            {id: 1, title: 'walking', goal: 3000, unit: "step"},
+            {id: 2, title: 'running', goal: 3000, unit: "step"},
+            {id: 3, title: 'squeeze ball', goal: 500, unit: "time"}
         ]
     }
-    // var LabresultResource = $resource('http://0.0.0.0:5000/result/info');
-    // var NutrientResource01 = $resource('http://0.0.0.0:5000/nutrient/info');
+    
     var LabresultResource = ResourceFactory.labresultInfo()
     var postNutrientResource = ResourceFactory.nutrientMeal()
     var appointmentResource = ResourceFactory.appointment()
     var profileResource = ResourceFactory.profile()
+    var exerciseResource = ResourceFactory.exercise()
 
     var userid = currentUser.userid
     var appid = currentUser.appid
@@ -247,6 +252,9 @@ function InputFormCtrl($scope, ResourceFactory, modalProvider, currentUser){
         }else if($scope.appointment != undefined){
             information = angular.toJson(createDataObj('description', $scope.appointment)) 
             appointmentResource.save(information)
+        }else if($scope.exercise != undefined){
+            activity = angular.toJson(createDataObj('activity', $scope.exercise)) 
+            exerciseResource.save(activity)
         }else if($scope.nutrient != undefined){
             console.log("save")
             nutrient = angular.toJson(createDataObj('nutrients', $scope.nutrient))
@@ -264,6 +272,7 @@ function InputFormCtrl($scope, ResourceFactory, modalProvider, currentUser){
         modalProvider.closeModal()
         $scope.chooseType = {}
         $scope.labresult = {}
+        $scope.exercise = {}
         $scope.general = {}
         // window.location.reload(); 
     }
