@@ -48,9 +48,14 @@ angular.module('RDash').config(['$stateProvider', '$urlRouterProvider',
                 templateUrl: 'templates/resultDetail.html',
                 controller: 'LabResultDetailCtrl'
             })
-            .state('tables', {
-                url: '/tables',
-                templateUrl: 'templates/tables.html'
+            .state('exerciseDetail', {
+                url: '/exerciseDetail:ref',
+                templateUrl: 'templates/exerciseDetail.html',
+                controller: 'ExerciseDetailCtrl'
+            })
+            .state('medicine', {
+                url: '/medicine',
+                templateUrl: 'templates/medicine.html'
             });
     }
 ]);

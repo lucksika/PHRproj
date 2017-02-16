@@ -78,9 +78,11 @@ div.inline { float:left; }
 					
 					<h3 style="margin-left: 20px" ng-if="noData"><span class="label label-warning">No data</span></h3>
 					<div style="margin-top: 15px;" ng-repeat="result in results">
+					<div ng-if="showLineChart">
 					<canvas style="margin-left: 15px;width: 15px; height: 15px; background-color: #4FC3F7;"></canvas>  Your nutrient data
 					<canvas style="margin-left: 15px;width: 15px; height: 15px; background-color: #FFC400;"></canvas>  Minimum
 					<canvas style="margin-left: 15px;width: 15px; height: 15px; background-color: #F44336;"></canvas>  Maximum
+					</div>
 					<div ng-if="showLineChart" class="result-chart" id="line-chart">
 						<div class="panel panel-default">
 							<div class="panel-body">

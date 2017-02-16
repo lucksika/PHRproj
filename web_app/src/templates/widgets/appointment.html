@@ -4,7 +4,9 @@
 			<div class="widget_card" style="padding-bottom: 20px;">
 				<span style="font-size: 28px; color: #30426a;">Upcoming</span>
 			</div>		
-			<h3 style="margin-left: 20px" ng-if="noData"><span class="label label-warning">No up coming appoint in this month</span></h3>
+			<h3 style="margin-left: 20px" ng-if="noData">
+			<span class="label label-warning">No upcoming event this month</span>
+			</h3>
 			<md-content>
 				<md-list ng-repeat="event in eventsWidget">
 					<md-list-item class="md-3-line" style="margin-top: 0px; padding: initial;" >

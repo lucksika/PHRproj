@@ -17,6 +17,7 @@ import service
 import mock 
 
 app = Flask(__name__)
+# app.config["JSON_SORT_KEYS"] = False
 CORS(app)
 
 #
@@ -25,6 +26,7 @@ table_nutrient = 'nutrients'
 table_result = 'results'
 table_information = 'information'
 table_exercise = 'exercise'
+table_medicines = 'medicines'
 
 @app.route('/')
 @cross_origin
@@ -36,7 +38,7 @@ table_exercise = 'exercise'
 def nutrientdata():
 	if request.method == 'POST':
 		obj = request.json
-
+		print json.dumps(obj, indent=4, separators=(',', ': '))
 		userid = obj.get("userid")
 		appid = obj.get("appid")
 		nutrients = obj.get("nutrients")
@@ -466,7 +468,59 @@ def exercise():
 
 		chart = service.generate_info_exercise_barchart(data)
 
-		return jsonify(chart=chart)
+		return jsonify(chart=chart, data=data)
+#######
+####### Medicine
+#######
+@app.route('/medicine/list', methods=['GET', 'POST'])
+def medicine_list():
+	if request.method == 'GET':
+		med_list = service.get_all_medicine_title(mock.get_all_medicine())	
 
+		return jsonify(list=med_list)
+
+@app.route('/medicine/info', methods=['GET', 'POST'])
+def medicine():
+	if request.method == 'POST':
+		obj = request.json
+
+		userid = obj.get("userid")
+		appid = obj.get("appid")
+		medicine = obj.get("medicine")
+		med_id = obj.get("medId")
+		desc = service.get_medicine_bykey(med_id)
+		side_effect = desc.get("side_effect")
+		title = desc.get("title")
+
+		rowkey = userid + "_" + appid + "_" + med_id
+
+		data = {}
+		data['medicine'] = medicine
+		data['medicine']['title'] = title
+		data['medicine']['side_effect'] = side_effect
+
+
+		manager.save_batch(table_medicines, rowkey, data)
+
+		print json.dumps(obj, indent=4, separators=(',', ': '))
+		
+		return jsonify(success="true")
+	elif request.method == 'GET': #get all current use medicine
+		userid = request.args.get("userid")
+		appid =  request.args.get("appid")
+
+		start_row = base64.b64encode("{}_{}_".format(userid, appid))
+
+		desc = manager.fetch_all(table_medicines)
+		desc_list = list(desc)
+		desc_value = []
+		for key in desc_list:
+			for x in key:
+				desc_value.append(key.get(x))
+
+		
+		schedule = service.get_medicin_schedule(desc_list)
+
+		return jsonify(data=list(schedule.items()), desc=desc_value)
 if __name__  == '__main__':
-	app.run(host='0.0.0.0', port=5000, debug=True)	
+	app.run(host='localhost', port=5000, debug=True)	

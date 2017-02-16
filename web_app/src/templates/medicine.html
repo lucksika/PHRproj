@@ -1,0 +1,16 @@
+<div ng-controller="medicineInfoCtrl">
+ <div style="padding: 10px;" ng-include="'../templates/widgets/medicine.html'"></div>
+ <div style="padding: 10px;">
+ <rd-widget>
+ 		<rd-widget-body>
+ 			<span style="font-size: 28px; color: #30426a;">Current medicine</span>
+ 			<div ng-repeat="desc in description">
+ 				<h4 style="color: #40426a;">{{desc.title}}</h3><br>
+ 				<h5>Take {{desc.amount}} pill(s) per time</h5>
+ 				<!-- <h5>Times daily: {{desc.times_daily}} {{desc.med_meal}}</h5> -->
+ 				<h5>Side effect: {{desc.side_effect}}</h5><br>
+ 			</div>
+ 		</rd-widget-body>
+ </rd-widget>
+</div>
+</div>

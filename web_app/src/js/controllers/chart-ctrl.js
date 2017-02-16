@@ -8,11 +8,12 @@ angular
  .module('RDash')
  .controller('GetImageCtrl', ['$scope', 'ResourceFactory', GetImageCtrl])
  .controller('LabresultCtrl', ['$scope', 'ResourceFactory', 'currentUser','FormatDateFactory' , LabresultCtrl])
- .controller('LabResultDetailCtrl', ['$scope', '$state', '$stateParams', 'ResourceFactory', 'currentUser', 'FormatDateFactory', LabResultDetailCtrl])
+ .controller('LabResultDetailCtrl', ['$scope', '$state', '$stateParams', 'ResourceFactory', 'currentUser', 'FormatDateFactory', 'generateObjectForTableService', LabResultDetailCtrl])
  .controller('LineBunCtrl', ['$scope', LineBunCtrl])
  .controller('BarWeightCtrl', ['$scope', BarWeightCtrl])
  .controller('BarNutrientProgressCtrl', ['$scope', BarNutrientProgressCtrl])
- .controller('BarExerciseCtrl', ['$scope', '$rootScope', 'ResourceFactory', 'currentUser', 'FormatDateFactory', BarExerciseCtrl])
+ .controller('BarExerciseCtrl', ['$scope', '$rootScope', 'ResourceFactory', 'currentUser', 'FormatDateFactory', 'generateExerciseColorandOptionChart', BarExerciseCtrl])
+ .controller('ExerciseDetailCtrl', ['$scope', '$state', '$stateParams', 'ResourceFactory', 'currentUser', 'FormatDateFactory', 'generateObjectForTableService', 'generateExerciseColorandOptionChart', ExerciseDetailCtrl])
  .controller('PieNutrientCtrl', ['$scope', 'ResourceFactory', 'FormatDateFactory', 'NutrientPieChartService', 'currentUser', PieNutrientCtrl])
  .controller('PieNutrientWidgetCtrl', ['$scope', 'ResourceFactory', 'FormatDateFactory', 'NutrientPieChartService', 'currentUser', PieNutrientWidgetCtrl])
  .controller('PieNutrientProgressWidgetCtrl', ['$scope', 'ResourceFactory', 'FormatDateFactory', 'NutrientPieChartService', 'currentUser', PieNutrientProgressWidgetCtrl])
@@ -23,89 +24,63 @@ angular
 
 function GetImageCtrl($scope, ResourceFactory){
     var imageResource = ResourceFactory.labresultImage()
-    /*
-    //  - get one nutrient a time
-    //  - last 7 year only
-    //  
-    //  parameter -> nutrient title
-    //  graph show -> value & limit
-    //  * change date format to 'Aug 2, 16'
-    */
+
     $scope.getImg = function () {
         var image = imageResource.get( function (){
-            console.log(image)
+            // console.log(image)
             $scope.myImage = image.string
         });
     }
 
 }
-function BarExerciseCtrl($scope, $rootScope, ResourceFactory, currentUser, FormatDateFactory) {
+function ExerciseDetailCtrl($scope, $state, $stateParams, ResourceFactory, currentUser, FormatDateFactory, generateObjectForTableService, generateExerciseColorandOptionChart){
+    // console.log("$stateParams.ref: ", $stateParams.ref)
     var userid = currentUser.userid
     var appid = currentUser.appid
     var date = FormatDateFactory.formatDate(new Date())
-    var amount = 7
-    var mock = {
+    var amount = 14
+    $scope.title = $stateParams.ref
+    $scope.unit = {
         "walking": "step",
         "running": "step",
         "squeeze ball": "time"
     }
 
-    $scope.unit = mock
-
-    $scope.series = ['You'];
-    // $scope.colours = [ '#EF5350', '#EC407A', '#AB47BC', '#2196F3', '#3F51B5', '#673AB7', '#009688']
-    var generateOptionList = function(title){
-        return  {
-            scales: {
-                yAxes: [{
-                    scaleLabel: {
-                    display: true,
-                    labelString: 'Value ( ' + mock[title] + ' )'
-                    }
-                }],
-                xAxes: [{
-                    scaleLabel: {
-                    display: true,
-                    labelString: 'Date'
-                    }
-                }]
-            }
-        }
-    }
-    var generateColorList = function(lists){
-        var colors = {}
-        var options = {}
-        var attr = []
-        var green = '#9CCC65'
-        var yellow = '#FFF59D'
+    var initialBarExercise = function(){
         
-        lists.forEach(function(list){
-            color = []
-            options[list.title] = generateOptionList(list.title)
-            list.points.forEach(function(p){
-                if(p >= list.goal[0]){
-                    color.push(green)
-                }else{
-                    color.push(yellow)
-                }
-            })
-            colors[list.title] = color
+        var exerciseResource = ResourceFactory.exercise()
+        var info = exerciseResource.get({userid: userid, appid: appid, date: date, title: $stateParams.ref,amount: amount}, function(){
+            $scope.results = info.chart
+            // console.log(info.chart)
+            // console.log(info.data)
+            var list = generateExerciseColorandOptionChart.generateColorandOptionList(info.chart)
+            $scope.colours = list[0]
+            $scope.options = list[1]
+            $scope.table = generateObjectForTableService.createObjforTable(info.data[$stateParams.ref])
         })
-        // console.log("colors" , colors)
-        // console.log("options", options)
-        attr.push(colors)
-        attr.push(options)
-
-        return attr
-
     }
     
+    initialBarExercise()
+}
+
+function BarExerciseCtrl($scope, $rootScope, ResourceFactory, currentUser, FormatDateFactory, generateExerciseColorandOptionChart) {
+    var userid = currentUser.userid
+    var appid = currentUser.appid
+    var date = FormatDateFactory.formatDate(new Date())
+    var amount = 7
+    $scope.unit = {
+        "walking": "step",
+        "running": "step",
+        "squeeze ball": "time"
+    }
+
     var initialBarExercise = function(){
         $scope.series = ['You data'];
         var exerciseResource = ResourceFactory.exercise()
         var info = exerciseResource.get({userid: userid, appid: appid, date: date, amount: amount}, function(){
+            console.log(info)
             $scope.results = info.chart
-            var list = generateColorList(info.chart)
+            var list = generateExerciseColorandOptionChart.generateColorandOptionList(info.chart)
             $scope.colours = list[0]
             $scope.options = list[1]
         })
@@ -191,14 +166,6 @@ function LabresultCtrl($scope, ResourceFactory, currentUser, FormatDateFactory){
             
 
         }
-    // var a = ['#F44336', '#F44336', '#F44336', '#F44336', '#F44336', '#F44336', '#F44336', '#F44336', '#F44336', '#F44336', '#F44336', '#F44336']
-    // var b = ['#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0', '#9C27B0']
-    
-    // $scope.override = [{
-    //     xAxisID: 'TEST',
-    // },{
-    //     pointBackgroundColor: b,
-    // }]
     
     $scope.colours = ['#4FC3F7', '#F44336']
     
@@ -211,13 +178,12 @@ function LabresultCtrl($scope, ResourceFactory, currentUser, FormatDateFactory){
         
     }
 
-
     initialLabresultData()
 
 }
 
-function LabResultDetailCtrl($scope, $state, $stateParams, ResourceFactory, currentUser, FormatDateFactory){
-    console.log("$stateParams.ref: ", $stateParams.ref)
+function LabResultDetailCtrl($scope, $state, $stateParams, ResourceFactory, currentUser, FormatDateFactory, generateObjectForTableService){
+    // console.log("$stateParams.ref: ", $stateParams.ref)
     var today = new Date()
     var userid = currentUser.userid
     var appid = currentUser.appid
@@ -256,33 +222,12 @@ function LabResultDetailCtrl($scope, $state, $stateParams, ResourceFactory, curr
     $scope.colours = ['#4FC3F7', '#F44336']
     
     $scope.series = ['Lucksika (mg/dL)', 'Limit (mg/dL)'] 
-
-    var createObjforTable = function(tableObj){
-        var arr = []
-        for(var key in tableObj){
-            var obj = {}
-            obj.date = FormatDateFactory.formatDateTable(new Date(key))
-
-            var data = tableObj[key].split(',') //[value, limit]
-            obj.value = data[0]
-
-            var ol = parseFloat(data[0]) - parseFloat(data[1])
-            if(ol > 0){
-                obj.overlimit = "over limit: " + ol.toFixed(2);
-            }else{
-                obj.overlimit = "-"; 
-            }
-            arr.push(obj)
-
-            // if(key == )
-        }
-        return arr
-    }       
+  
     var initialLabresultData = function(){
         var LabresultResource = ResourceFactory.labresultChartPoint()
         var info = LabresultResource.get({userid: userid, appid: appid, year: year, month: month, amount: amount, title: $stateParams.ref }, function(){
             $scope.results = info.chart
-            $scope.table = createObjforTable(info.data[$stateParams.ref])
+            $scope.table = generateObjectForTableService.createObjforTable(info.data[$stateParams.ref])
             
         })
         
@@ -412,12 +357,12 @@ function PieNutrientProgressWidgetCtrl($scope, ResourceFactory, FormatDateFactor
         var getMealNutrientResource = ResourceFactory.nutrientMealProgress()
         var obj = getMealNutrientResource.get({userid: userid, appid: appid, date: date}, function(){
             if(!angular.equals({}, obj.data)){
-                console.log("not empty")
+                // console.log("not empty")
                 $scope.result = obj.data
                 $scope.limit = obj.limit
             }
-            console.log($scope.result)
-            console.log($scope.limit)
+            // console.log($scope.result)
+            // console.log($scope.limit)
         })
         
     }
@@ -481,7 +426,7 @@ function PieNutrientCtrl($scope, ResourceFactory, FormatDateFactory, NutrientPie
     
 
     var initialPieChartView = function(){
-        console.log("initial")
+        // console.log("initial")
         var today = new Date()
         $scope.date = today
         showAllMeal(FormatDateFactory.formatDate(today))
@@ -494,7 +439,7 @@ function PieNutrientCtrl($scope, ResourceFactory, FormatDateFactory, NutrientPie
             // 'all' isn't meal in hbase
             if(_meal.title != 'all'){                
                 var obj = getMealNutrientResource.get({userid: userid, appid: appid, date: date, meal: _meal.title}, function(){
-                    console.log("showAllMeal")
+                    // console.log("showAllMeal")
                     if(obj.data != null){
                         $scope[_meal.title] = NutrientPieChartService.generatePieChartAttr(_meal.title, obj)
                         $scope.noData = false

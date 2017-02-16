@@ -2,7 +2,7 @@ from starbase.client.table import scanner
 import starbase
 
 HBASE_HOST = 'localhost'
-HBASE_PORT = 8080
+HBASE_PORT = 9000
 
 
 def save_batch(table, rowkey, batch_data):
@@ -26,11 +26,11 @@ def fetch(table, rowkey, *args):
     		rowkey, args
     		)
 
-def fetch_all(table, column):
+def fetch_all(table):
 	c = starbase.Connection(host=HBASE_HOST, port=HBASE_PORT)
-	table = c.table('information')
+	table = c.table(table)
 	
-	return table.fetch_all_rows(with_row_id=True, scanner_config='<Scanner maxVersions="1"></Scanner>')
+	return table.fetch_all_rows(with_row_id=False, scanner_config='<Scanner maxVersions="1"></Scanner>')
 
 
 def fetch_from(table, start_row, *args):

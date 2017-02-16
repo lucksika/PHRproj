@@ -6,36 +6,43 @@ angular.module('RDash')
     }
 })
 .factory('ResourceFactory', ['$resource', function ($resource) {
+    var host = 'localhost'
 	return {
 		nutrientMeal: function(){
-			return $resource('http://0.0.0.0:5000/nutrient/meal');
+			return $resource('http://'+ host +':5000/nutrient/meal');
 		},
 		nutrientMealProgress: function(){
-			return $resource('http://0.0.0.0:5000/nutrient/chart/progress');
+			return $resource('http://'+ host +':5000/nutrient/chart/progress');
 		},
         nutrientMealLineChart: function(){
-            return $resource('http://0.0.0.0:5000/nutrient/chart/points');
+            return $resource('http://'+ host +':5000/nutrient/chart/points');
         },
         nutrientImage: function(){
             return $resource('http://127.0.0.1:5000/nutrient/chart/image');
         },
 		labresultInfo: function(){
-			return $resource('http://0.0.0.0:5000/result/info');
+			return $resource('http://'+ host +':5000/result/info');
 		},
 		labresultImage: function(){
 			return $resource('http://127.0.0.1:5000/result/chart/image');
 		},
 		labresultChartPoint: function(){
-			return $resource('http://0.0.0.0:5000/result/chart/points');
+			return $resource('http://'+ host +':5000/result/chart/points');
 		},
         exercise: function(){
-            return $resource('http://0.0.0.0:5000/exercise/info');
+            return $resource('http://'+ host +':5000/exercise/info');
         },
         appointment: function(){
-            return $resource('http://0.0.0.0:5000/appointment/info');
+            return $resource('http://'+ host +':5000/appointment/info');
         },
         profile: function(){
-            return $resource('http://0.0.0.0:5000/profile/info');
+            return $resource('http://'+ host +':5000/profile/info');
+        },
+        medicine: function(){
+            return $resource('http://'+ host +':5000/medicine/info');
+        },
+        medicineList: function(){
+            return $resource('http://'+ host +':5000/medicine/list');
         }
 	}
 }])
@@ -76,6 +83,20 @@ angular.module('RDash')
 		modalInstance.dismiss()
 	}
 }])
+.service('medicineService', ['ResourceFactory', function(ResourceFactory) {
+    var medicineList 
+    this.initialMedicineList = function(msg) {
+        console.log("initialMedicineList ")
+        var medicineResource = ResourceFactory.medicineList()
+        var list = medicineResource.get(function (){
+            console.log("list.med_list ", list.list)
+            medicineList = list.list
+        });
+    }
+    this.getMedicineList = function(){
+        return medicineList
+    }
+}])
 .factory('broadcastService', ['$rootScope', function($rootScope) {
     return {
         send: function(msg) {
@@ -83,6 +104,81 @@ angular.module('RDash')
             $rootScope.$broadcast(msg);
         }
     }
+}])
+.service('generateExerciseColorandOptionChart', function(){
+    var mock = {
+            "walking": "step",
+            "running": "step",
+            "squeeze ball": "time"
+        }
+    var generateOptionList = function(title){
+        return  {
+            scales: {
+                yAxes: [{
+                    scaleLabel: {
+                    display: true,
+                    labelString: 'Value ( ' + mock[title] + ' )'
+                    }
+                }],
+                xAxes: [{
+                    scaleLabel: {
+                    display: true,
+                    labelString: 'Date'
+                    }
+                }]
+            }
+        }
+    }
+
+    this.generateColorandOptionList = function(lists){
+        var colors = {}
+        var options = {}
+        var attr = []
+        var green = '#9CCC65'
+        var yellow = '#FFF59D'
+        
+        
+        lists.forEach(function(list){
+            color = []
+            options[list.title] = generateOptionList(list.title)
+            list.points.forEach(function(p){
+                if(p >= list.goal[0]){
+                    color.push(green)
+                }else{
+                    color.push(yellow)
+                }
+            })
+            colors[list.title] = color
+        })
+        
+        attr.push(colors)
+        attr.push(options)
+
+        return attr
+
+    }
+})
+.service('generateObjectForTableService', ['FormatDateFactory', function(FormatDateFactory){
+    this.createObjforTable = function(tableObj){
+        var arr = []
+        for(var key in tableObj){
+            var obj = {}
+            obj.date = FormatDateFactory.formatDateTable(new Date(key))
+
+            var data = tableObj[key].split(',') //[value, limit]
+            obj.value = data[0]
+
+            var ol = parseFloat(data[0]) - parseFloat(data[1])
+            if(ol > 0){
+                obj.overlimit = "over: " + ol.toFixed(2);
+            }else{
+                obj.overlimit = "-"; 
+            }
+            arr.push(obj)
+
+        }
+        return arr
+    } 
 }])
 .service('NutrientPieChartService', function(){
 	this.generatePieChartAttr = function(meal, obj){
@@ -156,7 +252,8 @@ angular.module('RDash')
 })
 .service('currentDashbordWidgetService', ['broadcastService', function(broadcastService){
 	var widgetsKey = {
-        "water": true, 
+        "medicine": true,
+        "water": false, 
         "appointment": true,
         "nutrientMeal": true,
         "nutrientProgress": true,
@@ -168,6 +265,7 @@ angular.module('RDash')
         "nutrientProgress": '../templates/widgets/nutrientProgress.html',
         "appointment": '../templates/widgets/appointment.html',
         "nutrientMeal": '../templates/widgets/nutrientMeal.html',
+        "medicine": '../templates/widgets/medicine.html',
         "overlimit": '../templates/widgets/resultsOverlimit.html'
     }
     

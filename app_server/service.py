@@ -4,6 +4,57 @@ import matplotlib.pyplot as plt
 import datetime as dt
 import numpy as np
 import base64
+from collections import OrderedDict
+import mock
+
+def get_medicin_schedule(medicine_list):
+	ordered_time1 = OrderedDict()
+	ordered_time1["before"] = list()
+	ordered_time1["after"] = list()
+	ordered_time1["bed"] = list()
+
+	ordered_time2 = OrderedDict()
+	ordered_time2["before"] = list()
+	ordered_time2["after"] = list()
+	ordered_time2["bed"] = list()
+
+	ordered_time3 = OrderedDict()
+	ordered_time3["before"] = list()
+	ordered_time3["after"] = list()
+	ordered_time3["bed"] = list()
+
+	usage = OrderedDict()
+	usage["morning"] = ordered_time1
+	usage["noon"] = ordered_time2
+	usage["evening"] = ordered_time3
+	usage["bedtime"] = []
+	
+	for med in medicine_list:
+		for key in med:
+			for meal in (med.get(key).get("med_meal")).split():
+				for times in (med.get(key).get("times_daily")).split():
+					title = med.get(key).get("title")
+					if meal == 'bedtime':
+						if not title in usage.get("bedtime"):
+							usage.get("bedtime").append(title)
+					elif times == 'before':
+						usage.get(meal).get("before").append(title)
+					elif times == 'after':
+						usage.get(meal).get("after").append(title)
+
+	return usage
+
+
+def get_all_medicine_title(medicine_list):
+	lists = []
+	for med in medicine_list:
+  		lists.append({"medId": med ,"title": medicine_list.get(med).get("title")})
+
+  	return lists
+
+def get_medicine_bykey(_id):
+	return mock.get_all_medicine().get(_id)
+
 
 def generate_info_nutrient_linechart(data, minValue, maxValue, begin, amount):
 	dic = {}

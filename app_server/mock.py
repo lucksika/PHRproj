@@ -12,3 +12,31 @@ def get_nutrient_limit():
 	}
 
 	return limit
+
+def get_all_medicine():
+	medicine = {
+		"med01": {
+			"title": "Zinc",
+			"side_effect": "nausea, vomiting, diarrhea"
+		},
+		"med02": {
+			"title": "Folid acid",
+			"side_effect": "-"
+		},
+		"med03": {
+			"title": "Sodamint",
+			"side_effect": "flatulence"
+		},
+		"med04": {
+			"title": "Kalimate",
+			"side_effect": "constipation"
+		},
+		"med05": {
+			"title": "Aluminium hydroxide",
+			"side_effect": "increased aluminium",
+		}
+	}
+
+	return medicine
+def get_medicine_bykey(_id):
+	return get_all_medicine().get(_id)
