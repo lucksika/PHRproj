@@ -11,51 +11,118 @@ angular.module('RDash').config(['$stateProvider', '$urlRouterProvider',
 
         // Application routes
         $stateProvider
-            .state('index', {
+            .state('login', {
                 url: '/',
-                templateUrl: 'templates/dashboard.html'
+                templateUrl: 'templates/login/login.html',
+                controller: 'AuthenticationCtrl',
+                authenticate: false
             })
-            .state('profile', {
+            .state('home', {
+                url: '/home',
+                templateUrl: 'templates/home.html',
+                authenticate: true
+            })
+            .state('home.dashboard', {
+                url: '/dashboard',
+                views: {
+                    'content@home': {
+                        templateUrl: 'templates/dashboard.html',
+                    }
+                },
+                authenticate: true
+            })
+            .state('home.profile', {
                 url: '/profile',
-                templateUrl: 'templates/profile.html'
+                views: {
+                    'content@home': {
+                        templateUrl: 'templates/profile.html',
+                    }
+                },
+                authenticate: true
             })
             .state('info', {
                 url: '/info',
-                templateUrl: 'templates/info.html'
+                views: {
+                    'content@home': {
+                        templateUrl: 'templates/info.html',
+                    }
+                },
+                authenticate: true
             })
-            .state('medication', {
+            .state('home.medication', {
                 url: '/medication',
-                templateUrl: 'templates/medication.html'
+                views: {
+                    'content@home': {
+                        templateUrl: 'templates/medication.html',
+                    }
+                },
+                authenticate: true
             })
-            .state('foods', {
+            .state('home.foods', {
                 url: '/foods',
-                templateUrl: 'templates/foods.html'
+                views: {
+                    'content@home': {
+                        templateUrl: 'templates/foods.html',
+                    }
+                },
+                authenticate: true
             })
-            .state('labresults', {
+            .state('home.medication.labresults', {
                 url: '/labresults',
-                templateUrl: 'templates/labresults.html'
+                views: {
+                    'content@home': {
+                        templateUrl: 'templates/labresults.html',
+                    }
+                },
+                authenticate: true
+
             })
-            .state('exercise', {
-                url: '/exercise',
-                templateUrl: 'templates/exercise.html'
-            })
-            .state('appointment', {
-                url: '/appointment',
-                templateUrl: 'templates/appointment.html'
-            })
-            .state('resultDetail', {
+            .state('home.medication.labresults.resultDetail', {
                 url: '/resultDetail:ref',
-                templateUrl: 'templates/resultDetail.html',
-                controller: 'LabResultDetailCtrl'
+                views: {
+                    'content@home': {
+                        templateUrl: 'templates/resultDetail.html',
+                        controller: 'LabResultDetailCtrl',
+                    }
+                },
+                authenticate: true
             })
-            .state('exerciseDetail', {
+            .state('home.medication.exercise', {
+                url: '/exercise',
+                views: {
+                    'content@home': {
+                        templateUrl: 'templates/exercise.html',
+                    }
+                },
+                authenticate: true
+            })
+            .state('home.medication.appointment', {
+                url: '/appointment',
+                views: {
+                    'content@home': {
+                        templateUrl: 'templates/appointment.html',
+                    }
+                },
+                authenticate: true
+            })
+            .state('home.medication.exercise.exerciseDetail', {
                 url: '/exerciseDetail:ref',
-                templateUrl: 'templates/exerciseDetail.html',
-                controller: 'ExerciseDetailCtrl'
+                views: {
+                    'content@home': {
+                        templateUrl: 'templates/exerciseDetail.html',
+                        controller: 'ExerciseDetailCtrl',
+                    }
+                },
+                authenticate: true
             })
-            .state('medicine', {
+            .state('home.medication.medicine', {
                 url: '/medicine',
-                templateUrl: 'templates/medicine.html'
+                views: {
+                    'content@home': {
+                        templateUrl: 'templates/medicine.html',
+                    }
+                },
+                authenticate: true
             });
     }
 ]);

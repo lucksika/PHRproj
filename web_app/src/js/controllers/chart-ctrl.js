@@ -35,8 +35,8 @@ function GetImageCtrl($scope, ResourceFactory){
 }
 function ExerciseDetailCtrl($scope, $state, $stateParams, ResourceFactory, currentUser, FormatDateFactory, generateObjectForTableService, generateExerciseColorandOptionChart){
     // console.log("$stateParams.ref: ", $stateParams.ref)
-    var userid = currentUser.userid
-    var appid = currentUser.appid
+    var userid = currentUser.getUserID()
+    var appid = currentUser.getAppID()
     var date = FormatDateFactory.formatDate(new Date())
     var amount = 14
     $scope.title = $stateParams.ref
@@ -56,7 +56,7 @@ function ExerciseDetailCtrl($scope, $state, $stateParams, ResourceFactory, curre
             var list = generateExerciseColorandOptionChart.generateColorandOptionList(info.chart)
             $scope.colours = list[0]
             $scope.options = list[1]
-            $scope.table = generateObjectForTableService.createObjforTable(info.data[$stateParams.ref])
+            $scope.table = generateObjectForTableService.createObjforTable("under" ,info.data[$stateParams.ref])
         })
     }
     
@@ -64,8 +64,8 @@ function ExerciseDetailCtrl($scope, $state, $stateParams, ResourceFactory, curre
 }
 
 function BarExerciseCtrl($scope, $rootScope, ResourceFactory, currentUser, FormatDateFactory, generateExerciseColorandOptionChart) {
-    var userid = currentUser.userid
-    var appid = currentUser.appid
+    var userid = currentUser.getUserID()
+    var appid = currentUser.getAppID()
     var date = FormatDateFactory.formatDate(new Date())
     var amount = 7
     $scope.unit = {
@@ -132,8 +132,8 @@ function KnobWaterChartCtrl($scope){
 
 function LabresultCtrl($scope, ResourceFactory, currentUser, FormatDateFactory){
     var today = new Date()
-    var userid = currentUser.userid
-    var appid = currentUser.appid
+    var userid = currentUser.getUserID()
+    var appid = currentUser.getAppID()
     var year = today.getFullYear().toString()
     var month = '0' + (today.getMonth() + 1).toString()
     var amount = 4
@@ -185,8 +185,8 @@ function LabresultCtrl($scope, ResourceFactory, currentUser, FormatDateFactory){
 function LabResultDetailCtrl($scope, $state, $stateParams, ResourceFactory, currentUser, FormatDateFactory, generateObjectForTableService){
     // console.log("$stateParams.ref: ", $stateParams.ref)
     var today = new Date()
-    var userid = currentUser.userid
-    var appid = currentUser.appid
+    var userid = currentUser.getUserID()
+    var appid = currentUser.getAppID()
     var year = today.getFullYear().toString()
     var month = '0' + (today.getMonth() + 1).toString()
     var amount = 12
@@ -227,7 +227,7 @@ function LabResultDetailCtrl($scope, $state, $stateParams, ResourceFactory, curr
         var LabresultResource = ResourceFactory.labresultChartPoint()
         var info = LabresultResource.get({userid: userid, appid: appid, year: year, month: month, amount: amount, title: $stateParams.ref }, function(){
             $scope.results = info.chart
-            $scope.table = generateObjectForTableService.createObjforTable(info.data[$stateParams.ref])
+            $scope.table = generateObjectForTableService.createObjforTable("over", info.data[$stateParams.ref])
             
         })
         
@@ -328,8 +328,8 @@ var date = new Date();
     }];
 }
 function PieNutrientProgressWidgetCtrl($scope, ResourceFactory, FormatDateFactory, NutrientPieChartService, currentUser){
-    var userid = currentUser.userid
-    var appid = currentUser.userid
+    var userid = currentUser.getUserID()
+    var appid = currentUser.getAppID()
     var today = new Date() 
     $scope.lastcheck = today
     var date = FormatDateFactory.formatDate(today)
@@ -372,8 +372,8 @@ function PieNutrientProgressWidgetCtrl($scope, ResourceFactory, FormatDateFactor
 
 }
 function PieNutrientWidgetCtrl($scope, ResourceFactory, FormatDateFactory, NutrientPieChartService, currentUser){
-    var userid = currentUser.userid
-    var appid = currentUser.appid
+    var userid = currentUser.getUserID()
+    var appid = currentUser.getAppID()
     var today = new Date()
     $scope.lastcheck = today
     var mealList = ['breakfast', 'lunch', 'dinner']
@@ -411,8 +411,8 @@ function PieNutrientWidgetCtrl($scope, ResourceFactory, FormatDateFactory, Nutri
 
 }
 function PieNutrientCtrl($scope, ResourceFactory, FormatDateFactory, NutrientPieChartService, currentUser){
-    var userid = currentUser.userid
-    var appid = currentUser.appid
+    var userid = currentUser.getUserID()
+    var appid = currentUser.getAppID()
 
     var getMealNutrientResource = ResourceFactory.nutrientMeal()
 
@@ -484,8 +484,8 @@ function PieNutrientCtrl($scope, ResourceFactory, FormatDateFactory, NutrientPie
 function LineNutrientCtrl($scope, ResourceFactory, FormatDateFactory, currentUser){
     $scope.noData = false
     $scope.myImage = false
-    var userid = currentUser.userid
-    var appid = currentUser.appid
+    var userid = currentUser.getUserID()
+    var appid = currentUser.getAppID()
     var amount
     var title
     var date

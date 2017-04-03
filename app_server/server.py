@@ -38,7 +38,7 @@ table_medicines = 'medicines'
 def nutrientdata():
 	if request.method == 'POST':
 		obj = request.json
-		print json.dumps(obj, indent=4, separators=(',', ': '))
+		# print json.dumps(obj, indent=4, separators=(',', ': '))
 		userid = obj.get("userid")
 		appid = obj.get("appid")
 		nutrients = obj.get("nutrients")
@@ -101,7 +101,7 @@ def nutrientImage():
 		amount = (amount if amount < maxDateAmount and amount > 0 else maxDateAmount) + 1
 		
 
-	print amount
+	# print amount
 	end = dt.datetime.strptime(string_date, "%Y-%m-%d")
 	end = end + dt.timedelta(days=1)
 
@@ -112,8 +112,8 @@ def nutrientImage():
 	#start row - end row
 	begin = end - dt.timedelta(days=(amount))
 	# date = begin.strftime("%Y-%m-%d")
-	print appid
-	print userid
+	# print appid
+	# print userid
 	start_row = base64.b64encode("{}_{}_{}_".format(userid, appid, begin))
 	end_row = base64.b64encode("{}_{}_{}_".format(userid, appid, end))
 	column = base64.b64encode("{}:{}".format(columnFamily, title))
@@ -142,6 +142,7 @@ def nutrientImage():
 		# return "ok"
 
 	return jsonify(success="true")
+
 
 @app.route('/nutrient/chart/progress', methods=['GET'])
 def nutrientProgress():
@@ -180,7 +181,7 @@ def chartnutrient():
 		title = request.args.get("title")
 		amount = int(request.args.get("amount")) if request.args.get("amount") else 0
 		amount = (amount if amount < maxDateAmount and amount > 0 else maxDateAmount) + 1
-		print amount
+		# print amount
 
 		end = dt.datetime.strptime(string_date, "%Y-%m-%d")
 		end = end + dt.timedelta(days=1)
@@ -198,7 +199,7 @@ def chartnutrient():
 		column = base64.b64encode("{}:{}".format(columnFamily, title))
 		
 		result = list(manager.fetch_part(table_nutrient, start_row, end_row, column))
-		print result
+		# print result
 		if not result:
 			return jsonify(nodata="no data")
 		# print json.dumps(list(result), indent=4, separators=(',', ': '))
@@ -220,7 +221,7 @@ def chartpoint():
 		amount = request.args.get("amount")
 		title = request.args.get("title")
 		
-		print title
+		# print title
 		_, last_day = calendar.monthrange(int(year), int(month))
 		end = dt.datetime.strptime(year+'-'+month+'-'+str(last_day), "%Y-%m-%d")
 		begin = end+relativedelta(months=-int(amount))
@@ -252,52 +253,6 @@ def chartpoint():
 		# return jsonify(success="true")
 		return jsonify(chart=info_linechart, data=result)
 
-@app.route('/result/chart/image', methods=['GET'])
-def chartimg():
-	# mock data
-	date1 = dt.datetime(2016, 8, 1)
-	date2 = dt.datetime(2016, 8, 2)
-	date3 = dt.datetime(2016, 8, 3)
-	date4 = dt.datetime(2016, 8, 4)
-	date5 = dt.datetime(2016, 8, 5)
-	date6 = dt.datetime(2016, 8, 6)
-	date7 = dt.datetime(2016, 8, 7)
-	value = np.array([2.1,2.0,3.2,1.5,1.0,1.2,1.4])
-	encoded_string = ""
-
-	x = np.array([0,1,2,3,4,5,6])
-	y = value
-
-	my_datetime = [date1, date2, date3, date4, date5, date6, date7]
-	my_xticks = [date.strftime("%b %d, %Y") for date in my_datetime]
-
-	plt.xticks(x, my_xticks, rotation=45, fontsize=12)
-	plt.yticks(y, fontsize=12)
-	plt.xlabel('Date', fontsize=12)
-	plt.ylabel('Value (g/day)', fontsize=12)
-	plt.title('Na')
-	plt.fill_between(x, 2, 3, facecolor='#C8FFDA')
-	# plt.tight_layout()
-
-	lines = plt.plot(x, y)
-	plt.setp(lines, linewidth=5, color="#7CAFE6")
-	plt.savefig('img/value.png')
-
-	with open('img/value.png', "rb") as image_file:
-		encoded_string = base64.b64encode(image_file.read())
-
-
-	return jsonify(string=encoded_string)
-
-@app.route('/result/overlimit')
-def overlimit():
-	data_options = request.args.get('date_options')
-	results = []
-	for i in range(1,6):
-		results.append(json.dumps({"title": "results"+str(i), "cur_value": i, "limit": i-i*0.125, "check_date": "2015-05-05", "percentage": i*120.0/100.0}))
-
-	return jsonify(results=results)
-
 @app.route('/result/info', methods=['GET', 'POST'])
 def resultdata():
 	if request.method == 'POST':
@@ -316,15 +271,15 @@ def resultdata():
 		rowkey = userid + "_" + appid + "_" + date
 		_value = str(value) + ',' + str(limit)
 
-		print json.dumps(obj, indent=4, separators=(',', ': '))
+		# print json.dumps(obj, indent=4, separators=(',', ': '))
 
 		manager.insert_data(table_result, rowkey, 'testresults', title, _value)
 		
 		return jsonify(success="true")
 	elif request.method == 'GET':
 		data = manager.fetch(table_result, 'lucksika_display01_2017-01-26')
-		print data
-		print type(data) 
+		# print data
+		# print type(data) 
 		title = 'BUN'
 		value = 1.2
 		limit = 1.5
@@ -379,15 +334,14 @@ def profile():
 
 		userid = obj.get("userid")
 		appid = obj.get("appid")
-		date = obj.get("date")
 		profile = obj.get("profile")
 
 		data = {}
 		data['profile'] = profile
 
-		print data
+		# print data
 		
-		rowkey = userid + "_" + appid + "_" + date
+		rowkey = userid + "_" + appid
 		
 		manager.save_batch(table_information, rowkey, data)
 
@@ -396,9 +350,8 @@ def profile():
 	elif request.method == 'GET':
 		userid = request.args.get("userid")
 		appid =  request.args.get("appid")
-		date = request.args.get("date")
 
-		rowkey = userid + "_" + appid + "_" + date
+		rowkey = userid + "_" + appid
 		column = 'profile'
 		
 		data = manager.fetch(table_information, rowkey, column)
@@ -412,7 +365,7 @@ def profile():
 def exercise():
 	if request.method == 'POST':
 		obj = request.json
-		print request
+		# print request
 
 		userid = obj.get("userid")
 		appid = obj.get("appid")
@@ -430,12 +383,11 @@ def exercise():
 
 		manager.insert_data(table_exercise, rowkey, 'activity', title, _value)
 
-		print json.dumps(obj, indent=4, separators=(',', ': '))
+		# print json.dumps(obj, indent=4, separators=(',', ': '))
 
 		return jsonify(success="true")
 
 	elif request.method == 'GET':
-		print "GET"
 		maxDateAmount = 7
 		userid = request.args.get("userid")
 		appid =  request.args.get("appid")
@@ -472,7 +424,7 @@ def exercise():
 #######
 ####### Medicine
 #######
-@app.route('/medicine/list', methods=['GET', 'POST'])
+@app.route('/medicine/list', methods=['GET'])
 def medicine_list():
 	if request.method == 'GET':
 		med_list = service.get_all_medicine_title(mock.get_all_medicine())	
@@ -502,7 +454,7 @@ def medicine():
 
 		manager.save_batch(table_medicines, rowkey, data)
 
-		print json.dumps(obj, indent=4, separators=(',', ': '))
+		# print json.dumps(obj, indent=4, separators=(',', ': '))
 		
 		return jsonify(success="true")
 	elif request.method == 'GET': #get all current use medicine
@@ -523,4 +475,4 @@ def medicine():
 
 		return jsonify(data=list(schedule.items()), desc=desc_value)
 if __name__  == '__main__':
-	app.run(host='localhost', port=5000, debug=True)	
+	app.run(host='0.0.0.0', port=5000, debug=True)	

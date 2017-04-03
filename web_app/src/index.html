@@ -38,7 +38,7 @@
   <script src="../node_modules/angular-animate/angular-animate.js"></script> 
   <script src="../node_modules/angular-material/angular-material.js"></script> 
   <script src="../node_modules/moment/moment.js"></script>
-
+  <!-- <script src="http://connect.facebook.net/en_US/sdk.js"></script> -->
 
   <!-- Knob chart -->
   <script src="components/ng-knob/dist/ng-knob.min.js"></script>
@@ -54,100 +54,7 @@
 </head>
 
 <body ng-controller="MasterCtrl">
-  <div id="page-wrapper" ng-class="{'open': toggle}" ng-cloak ">
-
-    <!-- Sidebar -->
-    <div id="sidebar-wrapper" >
-      <ul class="sidebar">
-        <li class="sidebar-main">
-          <!-- <a ng-click="toggleSidebar()"> -->
-          <a align="center">
-            Medical Records
-            <span class="menu-icon glyphicon glyphicon-heart"></span>
-          </a> 
-        </li>
-        <li ng-if="toggle == true">
-          <rd-widget>
-          <rd-widget-body>
-          <img align="middle" class="avatar" src="img/joii.png">
-          <div class="username-sidebar" style="font-size: 16px;">Lucksika Losuvalna</div>
-          <div class="breadcrumb-links">
-            September 8, 1993 (age: 22)
-          </div>
-          <div class="breadcrumb-links">
-            Phone: 081-234-5678
-          </div>
-        </rd-widget-body>
-      </rd-widget>
-    </li>
-    <li class="sidebar-title"><span>NAVIGATION</span></li>
-    <li class="sidebar-list">
-      <a href="#">Dashboard <span class="menu-icon fa fa-home"></span></a>
-    </li>
-    <li class="sidebar-list">
-      <a href="#/profile">Profile <span class="menu-icon fa fa-user"></span></a>
-    </li>
-    <li class="sidebar-list">
-      <a href="#/medication">Medication <span class="menu-icon fa fa-medkit"></span></a>
-    </li>
-    <li class="sidebar-list">
-      <a href="#/foods">Food/Drink <span class="menu-icon fa fa-cutlery"></span></a>
-    </li>
-  </ul>
-</li>
-<!-- /////////////// FOOTTER /////////////// -->
-      <!-- <div class="sidebar-footer">
-        <div class="col-xs-4">
-          <a href="https://github.com/rdash/rdash-angular" target="_blank">
-            Github
-          </a>
-        </div>
-        <div class="col-xs-4">
-          <a href="https://github.com/rdash/rdash-angular/blob/master/README.md" target="_blank">
-            About
-          </a>
-        </div>
-        <div class="col-xs-4">
-          <a href="#">
-            Support
-          </a>
-        </div>
-      </div> -->
-    </div>
-    <!-- End Sidebar -->
-    <script type="text/javascript">
-    $('#myTabs a').click(function (e) {
-      e.preventDefault()
-      $(this).tab('show')
-    })
-    </script>
-   
-    <div id="content-wrapper" ng-controller="DashboardCtrl">
-      <div class="page-content">
-        <!-- Header Bar -->
-        <div class="row header">
-          <div class="col-xs-12">
-            <div class="user pull-right" style="margin: 10px;" >
-            <button style="margin-left: 10px;" class="btn btn-default" ng-click="openModal('dashboardCustom')">
-                  <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
-                </button>
-                <button style="margin-left: 10px;" class="btn btn-primary" ng-click="openModal('inputForm')">Add</button>
-            </div>
-            <div class="meta">
-              <div class="page">   
-                <!-- {{path != "" ? path : 'Dashboard'}} -->
-                Personal Health Record Storage and Display
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- End Header Bar -->
-
-        <!-- Main Content -->
-        <div ui-view></div>
-
-      </div><!-- End Page Content -->
-    </div><!-- End Content Wrapper -->
-  </div><!-- End Page Wrapper -->
+  <div ui-view></div>
+  <!-- End Page Wrapper -->
 </body>
 </html>

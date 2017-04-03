@@ -4,6 +4,7 @@
 
  angular.module('RDash')
  .controller('MasterCtrl', ['$scope', '$cookieStore', '$location', MasterCtrl])
+ .controller('AuthenticationCtrl', ['$scope', '$state','$rootScope', '$location', 'AuthenticationService', AuthenticationCtrl])
  .controller('TimelineCtrl', ['$scope', 'EventService', 'ResourceFactory', 'currentUser', TimelineCtrl])
  .controller('UpcomingEventWidgetCtrl', ['$scope','EventService', 'ResourceFactory', 'currentUser', UpcomingEventWidgetCtrl])
  .controller('medicineInfoCtrl', ['$scope', 'ResourceFactory', 'currentUser', medicineInfoCtrl])
@@ -53,6 +54,53 @@
         $scope.$apply();
     };
 }
+function AuthenticationCtrl($scope, $state, $rootScope, $location, AuthenticationService){
+    // reset login status
+    // $scope.FBlogin = function () {
+    //     console.log("FBlogin")
+    //     FB.login(function(response){
+    //         console.log("response: " , response)
+    //     }, {scope: 'publish_actions'});
+    // }
+
+    console.log("AuthenticationCtrl")
+    
+
+    $scope.FBlogin = function () {
+        console.log("click login")
+        AuthenticationService.ClearCredentials();
+        $scope.dataLoading = true;
+        FB.login(function(response){
+            console.log("response: " , response)
+        
+        // AuthenticationService.Login($scope.username, $scope.password, function (response) {
+            if (response.status == "connected") {
+                AuthenticationService.setStatus(true)
+                AuthenticationService.SetCredentials(response.authResponse.userID);
+                console.log("response.status == connected")
+                $state.transitionTo("home.dashboard");
+                // $location.path('/');
+            } else {
+                $scope.error = response.message;
+                $scope.dataLoading = false;
+            }
+        // });
+        }, {scope: 'publish_actions'});
+    };
+
+    $scope.FBlogout = function(){
+        console.log("click logout");
+        FB.getLoginStatus(function(response) {
+            if (response && response.status === 'connected') {
+                AuthenticationService.setStatus(false)
+                FB.logout(function(response) {
+                    $state.transitionTo("login");
+                });
+            }
+        });
+    }
+};
+
 function DashboardCtrl($scope, modalProvider, currentDashbordWidgetService, medicineService) {
     //get initial medicine list here
     medicineService.initialMedicineList()
@@ -106,8 +154,8 @@ function DashboardCustomCtrl($scope, modalProvider, currentDashbordWidgetService
 
 function ProfileCtrl($scope, ResourceFactory, currentUser){
     // console.log("ProfileCtrl")
-    var userid = currentUser.userid
-    var appid = currentUser.appid
+    var userid = currentUser.getUserID()
+    var appid = currentUser.getAppID()
     var date = '2017-01-28' //mock (find another solution later)
 
     var initialProfileView = function(){
@@ -123,8 +171,8 @@ function ProfileCtrl($scope, ResourceFactory, currentUser){
 }
 
 function medicineInfoCtrl($scope, ResourceFactory, currentUser){
-    var userid = currentUser.userid
-    var appid = currentUser.appid
+    var userid = currentUser.getUserID()
+    var appid = currentUser.getAppID()
     var test = [{
         time: "morning",
         before: "2,3,3",
@@ -168,14 +216,13 @@ function medicineInfoCtrl($scope, ResourceFactory, currentUser){
     initialProfileView()
 }
 function UpcomingEventWidgetCtrl($scope, EventService,  ResourceFactory, currentUser){
-    var userid = currentUser.userid
-    var appid = currentUser.appid
+    var userid = currentUser.getUserID()
+    var appid = currentUser.getAppID()
     var today = new Date()
     var year = today.getFullYear().toString()
     var month = '0' + (today.getMonth() + 1).toString()
 
-    var _today = moment(today).format('YYYY-MM-DD')
-    
+    var _today = moment(today).format('YYYY-MM-DD')    
     $scope.noData = false
     var appointmentResource = ResourceFactory.appointment()
     var eventsList = appointmentResource.get({userid: userid, appid: appid, month: month, year: year}, function (){
@@ -195,8 +242,8 @@ function UpcomingEventWidgetCtrl($scope, EventService,  ResourceFactory, current
         });
 }
 function TimelineCtrl($scope, EventService, ResourceFactory, currentUser){
-    var userid = currentUser.userid
-    var appid = currentUser.appid
+    var userid = currentUser.getUserID()
+    var appid = currentUser.getAppID()
     var monthList = EventService.monthList
     $scope.monthList = monthList
     $scope.year = "2017"
@@ -268,8 +315,8 @@ function InputFormCtrl($scope, ResourceFactory, modalProvider, currentUser, medi
     var medicineResource = ResourceFactory.medicine()
     
 
-    var userid = currentUser.userid
-    var appid = currentUser.appid
+    var userid = currentUser.getUserID()
+    var appid = currentUser.getAppID()
 
     var formatDate = function (dateObj){
         return moment(dateObj).format('YYYY-MM-DD');
@@ -319,6 +366,9 @@ function InputFormCtrl($scope, ResourceFactory, modalProvider, currentUser, medi
         
         return data
     }
+    var reloadPage = function(){
+        window.location.reload()
+    }
 
     $scope.saveInputForm = function(){    
         if($scope.labresult != undefined){
@@ -334,11 +384,13 @@ function InputFormCtrl($scope, ResourceFactory, modalProvider, currentUser, medi
         }else if($scope.nutrient != undefined){
             // console.log("save")
             nutrient = angular.toJson(createDataObj('nutrients', $scope.nutrient))
-            postNutrientResource.save(nutrient)
+            postNutrientResource.save(nutrient, function(data) {
+                console.log("data: " , data)
+            })
             nutrient = ''
         }else if($scope.information != undefined){
             profile = angular.toJson(createDataObj('profile', $scope.information))
-            // console.log("profile: " , profile)
+            console.log("profile: " , profile)
             profileResource.save(profile)
         }else if($scope.medicine != undefined){
             medicine = angular.toJson(createDataObj('medicine', $scope.medicine))
@@ -346,16 +398,17 @@ function InputFormCtrl($scope, ResourceFactory, modalProvider, currentUser, medi
             medicineResource.save(medicine)
         }
 
-        // closeModal()
+        // closeModal(reloadPage)
     } 
 
-    var closeModal = function(){
+    var closeModal = function(callback){
         modalProvider.closeModal()
         $scope.chooseType = {}
         $scope.labresult = {}
         $scope.exercise = {}
         $scope.general = {}
-        // window.location.reload(); 
+        callback()
+        
     }
     $scope.closeModal = closeModal
 }
